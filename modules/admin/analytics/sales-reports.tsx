@@ -99,7 +99,7 @@ export function SalesReportsView() {
               <XAxis dataKey="day" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip
-                formatter={(v: number) => [`${v.toFixed(0)}k PKR`, "Revenue"]}
+                formatter={(v: any) => [`${(Number(v) || 0).toFixed(0)}k PKR`, "Revenue"]}
                 contentStyle={{ borderRadius: 12, border: "1px solid #EBEBF0" }}
               />
               <Bar dataKey="revenue" fill="#1a1a2e" radius={[8, 8, 0, 0]} />

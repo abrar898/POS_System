@@ -54,7 +54,7 @@ export function InventoryCostsView() {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f1f5" />
               <XAxis dataKey="name" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip formatter={(v: number) => `${v.toFixed(1)}k`} />
+              <Tooltip formatter={(v: any) => `${Number(v).toFixed(1)}k`} />
               <Legend />
               <Bar dataKey="revenue" fill="#818cf8" name="Revenue" radius={[6, 6, 0, 0]} />
               <Bar dataKey="cogs" fill="#1a1a2e" name="COGS" radius={[6, 6, 0, 0]} />

@@ -1,8 +1,9 @@
 import { OnlineOrderingDashboard } from "@/modules/online_ordering/ordering-dashboard";
 import { Metadata } from "next";
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const restaurantName = params.slug.replace("-", " ").toUpperCase();
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const restaurantName = slug.replace("-", " ").toUpperCase();
   return {
     title: `${restaurantName} | Order Online with Low Commission`,
     description: `Order delicious food directly from ${restaurantName}. Fast delivery and exclusive online-only discounts.`,

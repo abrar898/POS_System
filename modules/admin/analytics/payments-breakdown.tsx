@@ -30,14 +30,14 @@ export function PaymentsBreakdownView() {
                   paddingAngle={3}
                   dataKey="amount"
                   nameKey="method"
-                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
                 >
                   {PAYMENT_SPLIT.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} stroke="#fff" strokeWidth={2} />
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => `Rs. ${value.toLocaleString()}`}
+                  formatter={(value: any) => `Rs. ${(Number(value) || 0).toLocaleString()}`}
                   contentStyle={{ borderRadius: 12 }}
                 />
                 <Legend />
