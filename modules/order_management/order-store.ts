@@ -95,9 +95,40 @@ function getActive(state: OrderCashierState): PosOrder | undefined {
 }
 
 export const useOrderCashierStore = create<OrderCashierState>((set) => {
+  const NAMES = ["Ethan Hunt", "Esther Howard", "Mark Davis", "Emily Garcia", "Jane Cooper", "Jenny Wilson", "Robert Fox", "Wade Warren"];
+  const TYPES: OrderType[] = ["dine_in", "takeaway", "delivery"];
+  const STATUSES: OrderStatus[] = ["completed", "sent", "ready", "served", "billed"];
+
+  const manyOrders: PosOrder[] = Array.from({ length: 20 }).map((_, i) => {
+    const numericId = (10020 + i).toString();
+    const localId = `local-${numericId}`;
+    const order = emptyOrder({
+      id: numericId,
+      localId,
+      customerName: NAMES[i % NAMES.length],
+      orderType: TYPES[i % TYPES.length],
+      status: STATUSES[i % STATUSES.length],
+      createdAt: new Date(Date.now() - i * 3600000).toISOString(),
+    });
+    // Add dummy items
+    order.items = Array.from({ length: (i % 4) + 1 }).map((_, j) => ({
+      id: `li-${localId}-${j}`,
+      menuItemId: "m1",
+      nameSnapshot: i % 2 === 0 ? "Classic Beef Burger" : "Scrambled egg toast",
+      priceSnapshot: 450 + (i * 10),
+      quantity: (j % 2) + 1,
+      modifiers: [],
+      isVoided: false,
+      voidReason: null,
+      notes: null
+    }));
+    recomputeTotals(order);
+    return order;
+  });
+
   const first = emptyOrder({ tableLabel: "4", tableId: "tbl-4", orderType: "dine_in" });
   return {
-    orders: [first],
+    orders: [first, ...manyOrders],
     activeOrderId: first.id,
     networkOnline: true,
     offlineQueue: [],

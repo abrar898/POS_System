@@ -6,7 +6,9 @@ import {
   Banknote,
   Bike,
   ChefHat,
+  Clock,
   GripVertical,
+  Home,
   Loader2,
   MessageCircle,
   Megaphone,
@@ -184,7 +186,7 @@ export function CashierTerminal() {
   const etaMin = estimateReadyMinutes(active);
   const totalStr = `Rs. ${active.totalAmount.toLocaleString()}`;
   return (
-    <div className={`flex h-full min-h-0 flex-col ${isCounter ? "bg-slate-900/30" : ""}`}>
+    <div className={`flex h-full min-h-0 flex-col selection:bg-teal-500/30 ${isCounter ? "bg-[#020617]" : ""}`}>
       {toast && (
         <div
           className={`fixed bottom-6 left-1/2 z-[100] max-w-[min(92vw,28rem)] -translate-x-1/2 rounded-2xl px-5 py-3 text-center text-sm font-bold shadow-2xl animate-in slide-in-from-bottom-4 ${
@@ -231,57 +233,32 @@ export function CashierTerminal() {
           isCounter ? "border-slate-800 bg-slate-900/70" : "border-[#EBEBF0] bg-white"
         }`}
       >
-        <span
-          className={`mr-1 shrink-0 text-[10px] font-black uppercase tracking-wider ${
-            isCounter ? "text-teal-500/90" : "text-[#a0a8b2]"
-          }`}
-        >
-          {isCounter ? "Counter tickets" : "Open orders"}
-        </span>
-        {orders.map((o) => (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => setActiveOrder(o.id)}
-            className={`flex shrink-0 items-center gap-2 rounded-2xl border py-2 pl-3 pr-3 text-xs font-black transition-all ${
-              o.id === activeOrderId
-                ? isCounter
-                  ? "border-teal-500 bg-teal-500 text-slate-950 shadow-lg shadow-teal-500/25"
-                  : "border-[#1a1a2e] bg-[#1a1a2e] text-white shadow-lg"
-                : isCounter
-                  ? "border-slate-700 bg-slate-800/80 text-slate-200 hover:border-teal-600/50"
-                  : "border-[#EBEBF0] bg-[#F5F6FA] text-[#1a1a2e] hover:border-[#1a1a2e]/25"
-            }`}
-          >
-            <span className="opacity-90">{TYPE_ICON[o.orderType]}</span>
-            <span className="max-w-[100px] truncate">
-              {o.tableLabel
-                ? `Table ${o.tableLabel}`
-                : o.orderType === "dine_in"
-                  ? "Dine-in"
-                  : o.orderType === "takeaway"
-                    ? "Takeaway"
-                    : "Delivery"}
-            </span>
-            {o.isHeld && (
-              <span className="text-[9px] uppercase bg-amber-400/90 text-amber-950 px-1.5 py-0.5 rounded-md">
-                Hold
-              </span>
-            )}
-          </button>
-        ))}
         <button
           type="button"
-          disabled={orders.length >= 8}
-          onClick={() => addOrderTab("dine_in", String((orders.length % 12) + 1))}
-          className={`shrink-0 rounded-2xl border border-dashed px-3 py-2 text-xs font-black disabled:opacity-40 ${
-            isCounter
-              ? "border-slate-600 text-slate-400 hover:border-teal-500 hover:text-teal-200"
-              : "border-[#c5c8d0] text-[#a0a8b2] hover:border-[#1a1a2e] hover:text-[#1a1a2e]"
+          onClick={() => (window.location.href = "/counter")}
+          className={`flex shrink-0 items-center gap-2 rounded-2xl border py-2.5 px-4 text-xs font-black transition-all border-slate-700 bg-slate-800 text-slate-200 hover:border-teal-500/50`}
+        >
+          <Home size={14} />
+          Back to Dashboard
+        </button>
+        <div className="h-6 w-px bg-slate-800 mx-2" />
+        <span
+          className={`mr-1 shrink-0 text-[10px] font-black uppercase tracking-wider ${
+            isCounter ? "text-teal-500" : "text-[#a0a8b2]"
           }`}
         >
-          + Tab
-        </button>
+          {isCounter ? "Current Ticket" : "Active Order"}
+        </span>
+        <div
+          className={`flex shrink-0 items-center gap-2 rounded-2xl border py-2.5 px-4 text-sm font-black border-teal-500 bg-teal-500 text-slate-950 shadow-lg shadow-teal-500/25`}
+        >
+          <span className="opacity-90">{TYPE_ICON[active.orderType]}</span>
+          <span>
+            {active.tableLabel
+              ? `Table ${active.tableLabel}`
+              : active.id.split("-")[1]?.toUpperCase() ?? "Draft"}
+          </span>
+        </div>
         <button
           type="button"
           onClick={() => closeOrderTab(activeOrderId)}
@@ -416,22 +393,22 @@ export function CashierTerminal() {
                   key={c.id}
                   type="button"
                   onClick={() => setCat(c.id)}
-                  className={`rounded-full border px-3 py-1.5 text-[11px] font-black transition-all ${
+                  className={`rounded-full border px-4 py-2 text-[11px] font-black transition-all ${
                     cat === c.id
                       ? isCounter
-                        ? "border-teal-400 bg-teal-500 text-slate-950"
+                        ? "border-teal-400 bg-teal-500 text-slate-950 shadow-lg shadow-teal-500/20"
                         : "border-[#1a1a2e] bg-[#1a1a2e] text-white"
                       : isCounter
-                        ? "border-slate-700 bg-slate-800/80 text-slate-300 hover:border-teal-600/40"
+                        ? "border-slate-800 bg-slate-900/80 text-slate-400 hover:border-teal-500/30 hover:text-teal-200"
                         : "border-[#EBEBF0] bg-[#F5F6FA] text-[#1a1a2e] hover:border-[#1a1a2e]/20"
                   }`}
                 >
-                  {c.name}
+                   {c.name}
                 </button>
               ))}
             </div>
           </div>
-          <div className="grid flex-1 grid-cols-2 content-start gap-3 overflow-y-auto p-4 xl:grid-cols-3">
+          <div className="grid flex-1 grid-cols-1 content-start gap-5 overflow-y-auto p-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {gridItems.map((item) => {
               const prep = item.prepMinutes ?? findMenuItem(item.id)?.prepMinutes ?? 12;
               return (
@@ -440,43 +417,49 @@ export function CashierTerminal() {
                   type="button"
                   disabled={!item.available}
                   onClick={() => handlePickMenuItem(item)}
-                  className={`rounded-[24px] border p-4 text-left transition-all disabled:opacity-40 ${
+                  className={`group relative flex flex-col items-start rounded-[32px] border p-6 text-left transition-all disabled:opacity-40 ${
                     isCounter
-                      ? "border-slate-700 bg-slate-900/90 hover:border-teal-500/50 hover:shadow-lg hover:shadow-teal-900/20"
+                      ? "border-slate-800 bg-slate-900/40 hover:border-teal-500/50 hover:bg-slate-800/60 hover:shadow-2xl hover:shadow-teal-500/10"
                       : "border-[#EBEBF0] bg-[#FAFAFC] hover:border-[#1a1a2e]/25 hover:shadow-lg"
                   }`}
                 >
-                  <div className="mb-2 flex items-start justify-between gap-2">
-                    <span className="text-2xl">{item.imageEmoji ?? "🍽️"}</span>
-                    <div className="flex flex-col items-end gap-1">
+                  <div className="mb-4 flex w-full items-start justify-between gap-2">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-800/80 text-4xl transition-transform group-hover:scale-110">
+                      {item.imageEmoji ?? "🍽️"}
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
                       {item.comboChildren?.length ? (
-                        <span className="rounded-full bg-indigo-500/20 px-2 py-0.5 text-[9px] font-black uppercase text-indigo-200">
+                        <span className="rounded-full bg-indigo-500/20 px-3 py-1 text-[10px] font-black uppercase text-indigo-300">
                           Combo
                         </span>
                       ) : null}
                       <span
-                        className={`rounded-full px-2 py-0.5 text-[9px] font-black ${
-                          isCounter ? "bg-teal-950 text-teal-300 ring-1 ring-teal-800" : "bg-emerald-50 text-emerald-800"
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black ${
+                          isCounter ? "bg-teal-950 text-teal-400 ring-1 ring-teal-500/30" : "bg-emerald-50 text-emerald-800"
                         }`}
                       >
-                        ~{prep} min
+                        <Clock size={12} /> {prep}m
                       </span>
                     </div>
                   </div>
-                  <p
-                    className={`line-clamp-2 text-sm font-black leading-snug ${
-                      isCounter ? "text-white" : "text-[#1a1a2e]"
-                    }`}
-                  >
-                    {item.name}
-                  </p>
-                  <p
-                    className={`mt-2 text-sm font-black tabular-nums ${isCounter ? "text-teal-200" : "text-[#1a1a2e]"}`}
-                  >
-                    Rs. {(item.comboBundlePrice ?? item.price).toLocaleString()}
-                  </p>
+                  <div className="flex-1">
+                    <p
+                      className={`text-lg font-black leading-tight ${
+                        isCounter ? "text-white" : "text-[#1a1a2e]"
+                      }`}
+                    >
+                      {item.name}
+                    </p>
+                    <p
+                      className={`mt-2 text-xl font-black tabular-nums ${isCounter ? "text-teal-400" : "text-[#1a1a2e]"}`}
+                    >
+                      Rs. {(item.comboBundlePrice ?? item.price).toLocaleString()}
+                    </p>
+                  </div>
                   {!item.available && (
-                    <p className="mt-1 text-[10px] font-black text-rose-500">Unavailable</p>
+                    <div className="absolute inset-0 flex items-center justify-center rounded-[32px] bg-slate-950/70 backdrop-blur-[4px]">
+                      <span className="rounded-full bg-rose-500 px-4 py-1.5 text-xs font-black uppercase text-white shadow-xl">Out of stock</span>
+                    </div>
                   )}
                 </button>
               );

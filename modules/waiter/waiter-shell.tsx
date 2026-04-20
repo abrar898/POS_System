@@ -13,12 +13,12 @@ import {
 } from "lucide-react";
 import { SERVICE_REQUESTS, WAITER_PROFILE } from "./mock-waiter-data";
 
-const TOP_NAV = [
+const SIDE_NAV = [
   { href: "/waiter", label: "Hub", icon: LayoutGrid },
   { href: "/waiter/floor", label: "Floor", icon: Map },
   { href: "/waiter/runner", label: "Runner", icon: UtensilsCrossed },
-  { href: "/waiter/orders", label: "Orders", icon: ClipboardList },
-  { href: "/waiter/requests", label: "Requests", icon: Bell },
+  { href: "/waiter/orders", label: "Orders Board", icon: ClipboardList },
+  { href: "/waiter/requests", label: "Task List", icon: Bell },
 ];
 
 export function WaiterShell({ children }: { children: ReactNode }) {
@@ -26,62 +26,80 @@ export function WaiterShell({ children }: { children: ReactNode }) {
   const openRequests = SERVICE_REQUESTS.length;
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#0c0f0e] text-stone-100">
-      <header className="sticky top-0 z-40 border-b border-emerald-950/80 bg-gradient-to-r from-emerald-950 via-[#0c1412] to-emerald-950/90 px-4 py-3 shadow-lg shadow-black/40 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
-          <Link href="/" className="flex shrink-0 items-center gap-2 rounded-xl bg-emerald-500/15 px-2 py-1.5 ring-1 ring-emerald-500/30">
-            <Home size={18} className="text-emerald-300" />
-          </Link>
-          <div className="min-w-0 flex-1 text-center sm:text-left">
-            <p className="text-[10px] font-black uppercase tracking-[0.25em] text-emerald-400/80">
-              Waiter · Floor service
-            </p>
-            <p className="truncate text-sm font-black text-white">{WAITER_PROFILE.name}</p>
-            <p className="truncate text-[11px] font-semibold text-stone-500">{WAITER_PROFILE.shift}</p>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <span className="hidden rounded-full border border-emerald-800/80 bg-emerald-950 px-2.5 py-1 text-[10px] font-black text-emerald-300 sm:inline">
-              {WAITER_PROFILE.section}
-            </span>
-            <span className="relative flex h-10 w-10 items-center justify-center rounded-xl bg-stone-900 ring-1 ring-stone-700">
-              <Bell size={18} className="text-amber-200" />
-              {openRequests > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-[1rem] items-center justify-center rounded-full bg-rose-500 px-1 text-[9px] font-black text-white">
-                  {openRequests}
-                </span>
-              )}
-            </span>
-          </div>
+    <div className="flex flex-col lg:flex-row h-screen w-full bg-[#EDEDED] font-sans selection:bg-black/10 overflow-hidden text-slate-800">
+      {/* Sidebar - Desktop */}
+      <aside className="hidden lg:flex w-[80px] bg-white border-r border-slate-200 flex-col items-center py-8 overflow-y-auto custom-scrollbar shrink-0">
+        <div className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg mb-8 shrink-0">
+           <UtensilsCrossed size={20} />
         </div>
-        <nav className="mx-auto mt-3 flex max-w-6xl gap-1 overflow-x-auto pb-1 sm:gap-2" aria-label="Waiter">
-          {TOP_NAV.map(({ href, label, icon: Icon }) => {
-            const active =
-              href === "/waiter"
-                ? pathname === "/waiter" || pathname === "/waiter/"
-                : pathname === href || pathname.startsWith(`${href}/`);
+        
+        <div className="w-1 h-1 bg-slate-200 rounded-full mb-6 shrink-0" />
+
+        <div className="flex flex-col gap-6 py-2">
+          {SIDE_NAV.map(({ href, icon: Icon, label }) => {
+            const active = href === "/waiter" ? pathname === "/waiter" : pathname.startsWith(href);
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex shrink-0 items-center gap-2 rounded-2xl px-3 py-2 text-xs font-black transition-all sm:px-4 ${
-                  active
-                    ? "bg-emerald-500 text-emerald-950 shadow-lg shadow-emerald-500/25"
-                    : "bg-stone-900/80 text-stone-400 ring-1 ring-stone-800 hover:text-emerald-200"
+                title={label}
+                className={`transition-all duration-300 relative h-12 w-12 flex items-center justify-center rounded-2xl group ${
+                  active ? "bg-slate-50 text-black shadow-inner" : "text-slate-300 hover:text-black hover:bg-slate-50"
                 }`}
               >
-                <Icon size={16} />
-                <span className="hidden sm:inline">{label}</span>
+                {active && <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-black rounded-r-full" />}
+                <div className={`${active ? "opacity-100 scale-110" : "opacity-100 group-hover:scale-110"} transition-all`}>
+                  <Icon size={20} />
+                </div>
               </Link>
             );
           })}
-        </nav>
-      </header>
+        </div>
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-3 py-4 sm:px-6 sm:py-6">{children}</main>
+        <div className="w-1 h-1 bg-slate-200 rounded-full mt-6 shrink-0" />
+        
+        <button className="mt-auto pt-8 opacity-30 hover:opacity-100 transition-opacity shrink-0">
+          <Home size={20} />
+        </button>
+      </aside>
 
-      <footer className="border-t border-stone-800 bg-stone-950/90 px-4 py-3 text-center text-[10px] font-semibold text-stone-600">
-        Same deployment · path <code className="text-emerald-600/90">/waiter</code> only · not admin or counter
-      </footer>
+      {/* Sidebar - Mobile/Bottom Nav */}
+      <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 bg-white shadow-2xl rounded-[30px] border border-slate-100 z-50 flex items-center justify-around px-2">
+          {SIDE_NAV.map(({ href, icon: Icon }) => {
+            const active = href === "/waiter" ? pathname === "/waiter" : pathname.startsWith(href);
+             return (
+              <Link key={href} href={href} className={`shrink-0 px-3 ${active ? "text-black" : "text-slate-300"}`}>
+                <Icon size={22} />
+              </Link>
+             );
+          })}
+      </nav>
+
+      {/* Main Area */}
+      <div className="flex-1 flex flex-col min-w-0 pb-32 lg:pb-0">
+        <header className="h-[100px] lg:h-[120px] px-6 lg:px-10 flex items-center justify-between shrink-0">
+          <div className="min-w-0">
+             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
+               Waiter · {WAITER_PROFILE.section}
+             </p>
+             <h1 className="truncate text-xl lg:text-2xl font-black text-slate-800 tracking-tight">{WAITER_PROFILE.name}</h1>
+          </div>
+          
+          <div className="flex items-center gap-4">
+             <button className="relative h-12 w-12 flex items-center justify-center rounded-[15px] bg-white border border-slate-100 text-slate-400 hover:bg-slate-50 transition-all shadow-sm">
+                <Bell size={20} />
+                {openRequests > 0 && <span className="absolute -top-1 -right-1 h-5 w-5 bg-black text-white text-[10px] font-black rounded-full flex items-center justify-center border-2 border-white">{openRequests}</span>}
+             </button>
+             <div className="h-12 w-12 rounded-[15px] overflow-hidden border-2 border-white shadow-lg">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan" alt="Avatar" />
+             </div>
+          </div>
+        </header>
+
+        <main className="flex-1 overflow-y-auto px-6 lg:px-10 pb-10">
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

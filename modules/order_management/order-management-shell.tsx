@@ -4,12 +4,20 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  LayoutGrid,
+  BarChart3,
+  ShoppingBag,
+  MessageCircle,
+  Users,
   ClipboardList,
-  Home,
-  MonitorSmartphone,
-  UtensilsCrossed,
-  Wifi,
-  WifiOff,
+  Star,
+  Settings,
+  Headphones,
+  LogOut,
+  Search,
+  Bell,
+  Mail,
+  Flame,
 } from "lucide-react";
 import { BRANCH } from "./mock-data";
 import { useOrderCashierStore } from "./order-store";
@@ -18,10 +26,8 @@ export type PosShellVariant = "counter" | "legacy";
 
 type ShellProps = {
   children: ReactNode;
-  /** Route prefix, e.g. `/counter` or `/order_management` */
   basePath: string;
   variant?: PosShellVariant;
-  /** Header line 1 */
   moduleLabel?: string;
 };
 
@@ -29,18 +35,9 @@ export function OrderManagementShell({
   children,
   basePath,
   variant = "legacy",
-  moduleLabel,
 }: ShellProps) {
   const pathname = usePathname();
-  const networkOnline = useOrderCashierStore((s) => s.networkOnline);
-  const setNetworkOnline = useOrderCashierStore((s) => s.setNetworkOnline);
-
-  const nav = [
-    { href: basePath, label: variant === "counter" ? "Counter" : "Cashier", icon: UtensilsCrossed },
-    { href: `${basePath}/orders`, label: "Floor orders", icon: ClipboardList },
-    { href: `${basePath}/offline`, label: "Offline sync", icon: MonitorSmartphone },
-  ];
-
+  
   const isActive = (href: string) => {
     if (href === basePath) {
       return pathname === basePath || pathname === `${basePath}/`;
@@ -49,122 +46,122 @@ export function OrderManagementShell({
   };
 
   const isCounter = variant === "counter";
-  const label =
-    moduleLabel ??
-    (isCounter ? "Counter · In-venue POS" : "Module 03 · Order Management (POS)");
+
+  const MENU_ITEMS = [
+    { href: basePath, label: "Overview", icon: LayoutGrid },
+    { href: `${basePath}/analytics`, label: "Analytics", icon: BarChart3 },
+    { href: `${basePath}/orders`, label: "Order", icon: ShoppingBag },
+    { href: `${basePath}/messages`, label: "Messages", icon: MessageCircle },
+    { href: `${basePath}/customers`, label: "Customers", icon: Users },
+    { href: `${basePath}/menu`, label: "Menu", icon: ClipboardList },
+    { href: `${basePath}/rating`, label: "Rating", icon: Star },
+  ];
+
+  const OTHER_ITEMS = [
+    { href: `${basePath}/settings`, label: "Settings", icon: Settings },
+    { href: `${basePath}/support`, label: "Support", icon: Headphones },
+  ];
 
   return (
-    <div
-      className={`flex h-screen w-screen overflow-hidden font-sans ${
-        isCounter ? "bg-slate-950 text-slate-100" : "bg-[#F5F6FA] text-[#1a1a2e]"
-      }`}
-    >
-      <aside
-        className={`z-20 flex w-[72px] shrink-0 flex-col items-center gap-6 border-r py-6 ${
-          isCounter ? "border-slate-800 bg-slate-900" : "border-[#EBEBF0] bg-white"
-        }`}
-      >
-        <Link
-          href="/"
-          className={`flex h-10 w-10 items-center justify-center rounded-xl shadow-lg transition-transform hover:scale-105 ${
-            isCounter ? "bg-teal-500 text-white" : "bg-[#1a1a2e] text-white"
-          }`}
-          title="Launch hub"
-        >
-          <Home size={18} />
-        </Link>
-
-        <div className="flex w-full flex-1 flex-col items-center gap-3">
-          {nav.map(({ href, label: navLabel, icon: Icon }) => {
-            const active = isActive(href);
-            return (
-              <Link
-                key={href}
-                href={href}
-                title={navLabel}
-                className={`flex h-11 w-11 items-center justify-center rounded-xl transition-all ${
-                  active
-                    ? isCounter
-                      ? "bg-teal-500 text-white shadow-lg shadow-teal-500/30"
-                      : "bg-[#1a1a2e] text-white shadow-lg shadow-[#1a1a2e]/20"
-                    : isCounter
-                      ? "text-slate-500 hover:bg-slate-800 hover:text-teal-300"
-                      : "text-[#C5C8D0] hover:bg-[#F5F6FA] hover:text-[#1a1a2e]"
-                }`}
-              >
-                <Icon size={20} />
-              </Link>
-            );
-          })}
+    <div className="flex h-screen w-full overflow-hidden font-sans bg-[#F8FAFC]">
+      {/* Sidebar */}
+      <aside className="z-20 hidden w-[240px] shrink-0 flex-col border-r bg-white py-8 lg:flex">
+        <div className="mb-10 px-8">
+          <div className="flex items-center gap-2 text-[#FF5B22]">
+            <Flame size={28} fill="#FF5B22" />
+            <span className="text-2xl font-black tracking-tight text-slate-800">Serve</span>
+          </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setNetworkOnline(!networkOnline)}
-          title={networkOnline ? "Simulate offline" : "Simulate online"}
-          className={`flex h-11 w-11 items-center justify-center rounded-xl border transition-all ${
-            networkOnline
-              ? isCounter
-                ? "border-emerald-800 bg-emerald-950 text-emerald-300"
-                : "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : isCounter
-                ? "border-amber-800 bg-amber-950 text-amber-200"
-                : "border-amber-200 bg-amber-50 text-amber-800"
-          }`}
-        >
-          {networkOnline ? <Wifi size={18} /> : <WifiOff size={18} />}
-        </button>
+        <div className="flex flex-1 flex-col overflow-y-auto px-4">
+          <p className="px-4 mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Menu</p>
+          <nav className="flex flex-col gap-2">
+            {MENU_ITEMS.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-sm font-bold transition-all ${
+                    active
+                      ? "bg-[#FF5B22] text-white shadow-xl shadow-orange-500/25"
+                      : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+                  }`}
+                >
+                  <item.icon size={20} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <p className="px-4 mt-10 mb-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Other</p>
+          <nav className="flex flex-col gap-2">
+            {OTHER_ITEMS.map((item) => {
+              const active = isActive(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-sm font-bold transition-all ${
+                    active
+                      ? "bg-[#FF5B22] text-white shadow-xl shadow-orange-500/25"
+                      : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+                  }`}
+                >
+                  <item.icon size={20} />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+
+          <button className="mt-auto flex items-center gap-3 rounded-[20px] px-4 py-3.5 text-sm font-bold text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all">
+            <LogOut size={20} />
+            Log Out
+          </button>
+        </div>
       </aside>
 
+      {/* Main Content */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <header
-          className={`flex h-14 shrink-0 items-center justify-between border-b px-6 backdrop-blur ${
-            isCounter
-              ? "border-slate-800 bg-slate-900/95"
-              : "border-[#EBEBF0] bg-white/90"
-          }`}
-        >
-          <div className="min-w-0">
-            <p
-              className={`text-[10px] font-black uppercase tracking-[0.2em] ${
-                isCounter ? "text-teal-400/90" : "text-[#a0a8b2]"
-              }`}
-            >
-              {label}
-            </p>
-            <h1
-              className={`truncate text-sm font-black ${isCounter ? "text-white" : "text-[#1a1a2e]"}`}
-            >
-              {BRANCH.name} · {BRANCH.city}
-            </h1>
+        <header className="flex h-20 shrink-0 items-center justify-between px-8 bg-[#F8FAFC]">
+          <div className="flex flex-col">
+            <h1 className="text-xl font-black text-slate-800">Overview</h1>
+            <p className="text-[11px] font-bold text-slate-400 mt-0.5">Analyze sales data to identify trends for increased revenue.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <span
-              className={`rounded-full border px-3 py-1.5 text-[11px] font-black ${
-                networkOnline
-                  ? isCounter
-                    ? "border-emerald-800 bg-emerald-950 text-emerald-300"
-                    : "border-emerald-200 bg-emerald-50 text-emerald-800"
-                  : isCounter
-                    ? "border-amber-800 bg-amber-950 text-amber-200"
-                    : "border-amber-200 bg-amber-50 text-amber-900"
-              }`}
-            >
-              {networkOnline ? "Online · Supabase" : "Offline · Dexie queue"}
-            </span>
+          
+          <div className="flex items-center gap-8">
+            <div className="relative w-[400px]">
+              <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300" size={18} />
+              <input
+                type="text"
+                placeholder="Search"
+                className="h-11 w-full rounded-2xl bg-white border border-slate-100 pl-14 pr-6 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF5B22]/10"
+              />
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <button className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:bg-slate-50 transition-all">
+                <Bell size={20} />
+              </button>
+              <button className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white border border-slate-100 text-slate-400 hover:bg-slate-50 transition-all">
+                <Mail size={20} />
+              </button>
+            </div>
+            
+            <div className="flex items-center gap-3 border-l h-10 pl-8">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-bold text-slate-800">Carter Gardner</p>
+              </div>
+              <div className="h-11 w-11 rounded-full bg-slate-300 border-2 border-white shadow-sm overflow-hidden flex items-center justify-center font-bold text-slate-600 uppercase">
+                CG
+              </div>
+            </div>
           </div>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-hidden">{children}</div>
-        <footer
-          className={`shrink-0 border-t px-4 py-1.5 text-center text-[10px] font-semibold ${
-            isCounter ? "border-slate-800 bg-slate-900 text-slate-500" : "border-[#EBEBF0] bg-white text-[#a0a8b2]"
-          }`}
-        >
-          Same app · path{" "}
-          <code className={isCounter ? "text-teal-400/90" : "text-[#1a1a2e]"}>{basePath}</code> only · not /admin or
-          /waiter
-        </footer>
+        <div className="min-h-0 flex-1 overflow-auto">{children}</div>
       </div>
     </div>
   );

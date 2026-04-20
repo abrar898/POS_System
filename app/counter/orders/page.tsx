@@ -1,5 +1,5 @@
-import { OrdersListView } from "@/modules/order_management/orders-list-view";
+import { CounterOrdersList } from "@/modules/order_management/orders-list";
 
 export default function CounterOrdersPage() {
-  return <OrdersListView />;
+  return <CounterOrdersList />;
 }

@@ -1,5 +1,5 @@
-import { CashierTerminal } from "@/modules/order_management/cashier-terminal";
+import { CounterDashboard } from "@/modules/order_management/counter-dashboard";
 
 export default function CounterHomePage() {
-  return <CashierTerminal />;
+  return <CounterDashboard />;
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Flame, Sparkles } from "lucide-react";
-import { ACTIVE_ORDERS, RUNNER_QUEUE, SERVICE_REQUESTS, TABLES } from "./mock-waiter-data";
+import { ArrowRight, Bell, Flame, LayoutGrid, Sparkles } from "lucide-react";
+import { ACTIVE_ORDERS, RUNNER_QUEUE, SERVICE_REQUESTS, TABLES, WAITER_PROFILE } from "./mock-waiter-data";
 
 export function WaiterDashboard() {
   const myTables = TABLES.filter((t) => t.assignedWaiter === "Sara Khan" && t.status !== "empty");
@@ -10,90 +10,102 @@ export function WaiterDashboard() {
   const urgentReq = SERVICE_REQUESTS.filter((r) => r.urgent).length;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      <div>
-        <h1 className="text-2xl font-black tracking-tight text-white sm:text-3xl">Shift hub</h1>
-        <p className="mt-1 text-sm font-medium text-stone-500">
-          Quick read on your section — tap a card to drill in. KDS sync is mock; layout matches real workflow.
+    <div className="h-full flex flex-col gap-4 lg:gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="flex flex-col">
+        <h1 className="text-xl lg:text-3xl font-black tracking-tighter text-slate-800">Shift Hub</h1>
+        <p className="text-[10px] lg:text-xs font-bold text-slate-400 uppercase tracking-widest">
+          {WAITER_PROFILE.section} • {myTables.length} tables
         </p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
         <Link
           href="/waiter/floor"
-          className="group rounded-3xl border border-stone-800 bg-gradient-to-br from-stone-900 to-stone-950 p-5 ring-1 ring-stone-800 transition hover:border-emerald-800/60 hover:ring-emerald-500/20"
+          className="group relative bg-[#FF5B22] rounded-[25px] lg:rounded-[30px] p-5 lg:p-6 text-white overflow-hidden shadow-lg shadow-orange-500/20 transition-all hover:scale-[1.02] active:scale-95"
         >
-          <p className="text-[11px] font-black uppercase tracking-wider text-stone-500">My tables</p>
-          <p className="mt-2 text-3xl font-black text-white">{myTables.length}</p>
-          <p className="mt-1 text-xs font-semibold text-stone-400">Seated or in service</p>
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-black text-emerald-400">
-            Open floor <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-          </span>
+          <div className="relative z-10">
+            <div className="bg-white/20 w-fit p-2 rounded-xl mb-3 lg:mb-4">
+              <LayoutGrid size={18} />
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] opacity-80">My tables</p>
+            <p className="text-3xl lg:text-4xl font-black mt-1 tracking-tighter">{myTables.length}</p>
+            <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest group-hover:gap-4 transition-all">
+              Manage Floor <ArrowRight size={12} />
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 bg-white/10 w-20 h-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
         </Link>
+
         <Link
           href="/waiter/runner"
-          className="group rounded-3xl border border-amber-900/40 bg-gradient-to-br from-amber-950/80 to-stone-950 p-5 ring-1 ring-amber-900/30"
+          className="group relative bg-white rounded-[25px] lg:rounded-[30px] p-5 lg:p-6 text-slate-800 border border-slate-100 shadow-md overflow-hidden transition-all hover:scale-[1.02] active:scale-95"
         >
-          <p className="flex items-center gap-2 text-[11px] font-black uppercase tracking-wider text-amber-200/80">
-            <Flame size={14} /> Runner queue
-          </p>
-          <p className="mt-2 text-3xl font-black text-amber-100">{ready}</p>
-          <p className="mt-1 text-xs font-semibold text-amber-200/60">Food ready from kitchen</p>
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-black text-amber-300">
-            Run food <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-          </span>
+          <div className="relative z-10">
+            <div className="bg-orange-50 text-orange-500 w-fit p-2 rounded-xl mb-3 lg:mb-4">
+              <Flame size={18} />
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Runner queue</p>
+            <p className="text-3xl lg:text-4xl font-black mt-1 tracking-tighter text-slate-800">{ready}</p>
+            <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-orange-500 group-hover:gap-4 transition-all">
+              Run Food <ArrowRight size={12} />
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 bg-orange-50/50 w-20 h-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
         </Link>
+
         <Link
           href="/waiter/requests"
-          className="group rounded-3xl border border-rose-900/40 bg-gradient-to-br from-rose-950/50 to-stone-950 p-5 ring-1 ring-rose-900/20"
+          className="group relative bg-white rounded-[25px] lg:rounded-[30px] p-5 lg:p-6 text-slate-800 border border-slate-100 shadow-md overflow-hidden transition-all hover:scale-[1.02] active:scale-95"
         >
-          <p className="text-[11px] font-black uppercase tracking-wider text-rose-200/70">Guest requests</p>
-          <p className="mt-2 text-3xl font-black text-rose-100">{SERVICE_REQUESTS.length}</p>
-          <p className="mt-1 text-xs font-semibold text-rose-200/50">{urgentReq} urgent</p>
-          <span className="mt-3 inline-flex items-center gap-1 text-xs font-black text-rose-300">
-            Resolve <ArrowRight size={14} className="transition group-hover:translate-x-0.5" />
-          </span>
+          <div className="relative z-10">
+            <div className="bg-teal-50 text-teal-600 w-fit p-2 rounded-xl mb-3 lg:mb-4">
+              <Bell size={18} />
+            </div>
+            <p className="text-[9px] font-black uppercase tracking-[0.2em] text-slate-400">Guest requests</p>
+            <p className="text-3xl lg:text-4xl font-black mt-1 tracking-tighter text-slate-800">{SERVICE_REQUESTS.length}</p>
+            <div className="mt-4 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest text-teal-600 group-hover:gap-4 transition-all">
+              Quick Resolve <ArrowRight size={12} />
+            </div>
+          </div>
+          <div className="absolute -right-4 -bottom-4 bg-teal-50/50 w-20 h-20 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
         </Link>
       </div>
 
-      <div className="rounded-3xl border border-stone-800 bg-stone-900/50 p-5">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 className="text-sm font-black uppercase tracking-wider text-stone-400">Live tickets</h2>
-          <Link href="/waiter/orders" className="text-xs font-black text-emerald-400 hover:underline">
-            See all
+      <div className="flex-1 min-h-0 bg-white rounded-[25px] lg:rounded-[30px] p-5 lg:p-8 border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+        <div className="mb-4 lg:mb-6 flex items-center justify-between shrink-0">
+          <h2 className="text-base lg:text-lg font-black text-slate-800 tracking-tight">Active Room Tickets</h2>
+          <Link href="/waiter/orders" className="text-[9px] font-black text-slate-400 uppercase tracking-widest hover:text-black transition-colors">
+            Board
           </Link>
         </div>
-        <ul className="space-y-2">
-          {ACTIVE_ORDERS.slice(0, 4).map((o) => (
-            <li key={o.id}>
-              <Link
-                href={`/waiter/table/${o.tableLabel}`}
-                className="flex items-center justify-between rounded-2xl bg-stone-950/80 px-4 py-3 ring-1 ring-stone-800 transition hover:ring-emerald-600/40"
-              >
-                <div>
-                  <p className="text-sm font-black text-white">Table {o.tableLabel}</p>
-                  <p className="text-[11px] font-semibold capitalize text-stone-500">{o.status.replace("_", " ")}</p>
+        <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-2">
+          {ACTIVE_ORDERS.slice(0, 8).map((o) => (
+            <div key={o.id} className="p-4 lg:p-5 rounded-[20px] border border-slate-100 bg-[#F8FAFC] hover:bg-white hover:shadow-xl transition-all group cursor-pointer h-fit">
+              <div className="flex justify-between items-start mb-4">
+                <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-slate-800 font-black shadow-sm group-hover:scale-110 transition-transform">
+                   {o.tableLabel}
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-black text-emerald-200/90">Rs. {o.total.toLocaleString()}</p>
-                  <p className="text-[10px] font-bold text-stone-600">{o.covers} guests</p>
-                </div>
-              </Link>
-            </li>
+                <span className={`px-2 py-1 rounded-md text-[8px] font-black uppercase tracking-widest bg-emerald-50 text-emerald-600`}>
+                  {o.status.replace("_", " ")}
+                </span>
+              </div>
+              <p className="text-base font-black text-slate-800">Rp. {o.total.toLocaleString()}</p>
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">{o.covers} PAX</p>
+                <ArrowRight size={12} className="text-slate-300 group-hover:text-black transition-colors" />
+              </div>
+            </div>
           ))}
-        </ul>
+        </div>
       </div>
 
-      <div className="rounded-3xl border border-emerald-900/30 bg-emerald-950/20 p-5">
-        <div className="flex items-start gap-3">
-          <Sparkles className="mt-0.5 shrink-0 text-emerald-400" size={22} />
-          <div>
-            <p className="text-sm font-black text-emerald-100">Handoff with counter</p>
-            <p className="mt-1 text-xs leading-relaxed text-stone-400">
-              New bills and voids stay on <span className="font-mono text-emerald-500/90">/counter</span>. You mark
-              served / guest-ready here; counter finalizes payment — one codebase, isolated paths.
-            </p>
-          </div>
+      <div className="p-4 lg:p-6 bg-slate-800 rounded-[25px] lg:rounded-[30px] text-white flex items-center gap-4 shrink-0">
+        <div className="h-10 w-10 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
+          <Sparkles size={20} />
+        </div>
+        <div className="min-w-0">
+          <p className="text-xs font-black tracking-tight truncate">Cloud Sync Active</p>
+          <p className="text-[10px] font-bold text-white/50 truncate">KDS & Counter synchronized</p>
         </div>
       </div>
     </div>
