@@ -23,7 +23,6 @@ const LINKS: { href: string; label: string; icon: ReactNode }[] = [
   { href: "/admin/sales-reports", label: "Sales reports", icon: <BarChart3 size={20} /> },
   { href: "/admin/menu-engineering", label: "Menu matrix", icon: <CircleDot size={20} /> },
   { href: "/admin/heatmap", label: "Heatmap", icon: <Grid3x3 size={20} /> },
-  { href: "/admin/staff", label: "Staff", icon: <Users size={20} /> },
   { href: "/admin/inventory-costs", label: "Inventory COGS", icon: <Package size={20} /> },
   { href: "/admin/payments", label: "Payments", icon: <PieChart size={20} /> },
   { href: "/admin/reconciliation", label: "Reconciliation", icon: <Scale size={20} /> },
