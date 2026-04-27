@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import {
   Users, Clock, Star, CheckCircle2, AlertCircle, Phone,
   Coffee, LayoutGrid, TrendingUp, Bell, X, ChevronRight,
-  Activity, MessageSquare, Award, Utensils, RotateCcw,
+  Activity, MessageSquare, Award, Utensils, RotateCcw, Menu
 } from "lucide-react";
 
 type WaiterStatus = "active" | "on-break" | "idle" | "offline";
@@ -46,6 +46,7 @@ export function SupervisorDashboard() {
   const [alerts, setAlerts] = useState(INIT_ALERTS);
   const [selected, setSelected] = useState<Waiter | null>(null);
   const [activeTab, setActiveTab] = useState<"overview"|"performance">("overview");
+  const [isAlertPanelOpen, setIsAlertPanelOpen] = useState(false);
 
   const setStatus = (id: string, status: WaiterStatus) =>
     setWaiters(p => p.map(w => w.id === id ? { ...w, status } : w));
@@ -59,93 +60,139 @@ export function SupervisorDashboard() {
   };
 
   return (
-    <div style={{ display:"flex", height:"100vh", width:"100%", background:"#F5F6FA", fontFamily:"'Inter',sans-serif", overflow:"hidden" }}>
-      {/* LEFT: Main */}
-      <div style={{ flex:1, display:"flex", flexDirection:"column", overflow:"hidden" }}>
+    <div className="flex flex-col md:flex-row h-screen w-full bg-[#F5F6FA] text-slate-900 font-sans overflow-hidden">
+      
+      {/* Mobile Top Nav */}
+      <div className="md:hidden flex items-center justify-between px-4 h-16 bg-white border-b border-gray-200 shrink-0">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white">
+            <Users size={16}/>
+          </div>
+          <span className="font-black text-sm uppercase tracking-wider">Supervisor</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsAlertPanelOpen(true)}
+            className="relative p-2 bg-gray-50 rounded-lg"
+          >
+            <Bell size={20}/>
+            {alerts.length > 0 && <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white" />}
+          </button>
+          <button className="p-2 bg-gray-50 rounded-lg">
+            <Menu size={20}/>
+          </button>
+        </div>
+      </div>
+
+      {/* LEFT: Main Content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
-        <div style={{ background:"white", borderBottom:"1px solid #EBEBF0", padding:"16px 24px", display:"flex", alignItems:"center", justifyContent:"space-between", flexShrink:0 }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"12px" }}>
-            <div style={{ width:"38px", height:"38px", borderRadius:"12px", background:"linear-gradient(135deg,#6366f1,#8b5cf6)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Users size={18} color="white"/>
+        <div className="hidden md:flex bg-white border-b border-gray-200 p-6 items-center justify-between shrink-0">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+              <Users size={20}/>
             </div>
             <div>
-              <h1 style={{ fontSize:"18px", fontWeight:900, color:"#1a1a2e", margin:0 }}>Supervisor Dashboard</h1>
-              <p style={{ fontSize:"11px", color:"#a0a8b2", margin:0 }}>Waiter management & floor oversight</p>
+              <h1 className="text-xl font-black text-slate-900 leading-none">Supervisor Dashboard</h1>
+              <p className="text-xs text-slate-400 font-bold mt-1">Staff management & floor oversight</p>
             </div>
           </div>
-          <div style={{ display:"flex", gap:"8px" }}>
+          <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-200">
             {(["overview","performance"] as const).map(t => (
-              <button key={t} onClick={() => setActiveTab(t)} style={{ padding:"7px 16px", borderRadius:"10px", border:"none", fontSize:"12px", fontWeight:700, cursor:"pointer", background: activeTab===t?"#1a1a2e":"#F5F6FA", color: activeTab===t?"white":"#6b7280", transition:"all 0.2s" }}>
+              <button 
+                key={t} 
+                onClick={() => setActiveTab(t)} 
+                className={`px-6 py-2 rounded-lg text-xs font-black transition-all ${activeTab===t ? "bg-slate-900 text-white shadow-md" : "text-slate-400 hover:text-slate-900"}`}
+              >
                 {t.charAt(0).toUpperCase()+t.slice(1)}
               </button>
             ))}
           </div>
         </div>
 
+        {/* Mobile Tabs */}
+        <div className="md:hidden flex p-2 bg-white border-b border-gray-200 gap-2 overflow-x-auto shrink-0">
+          {(["overview","performance"] as const).map(t => (
+            <button 
+              key={t} 
+              onClick={() => setActiveTab(t)} 
+              className={`flex-1 py-3 rounded-xl text-xs font-black transition-all whitespace-nowrap ${activeTab===t ? "bg-slate-900 text-white" : "bg-gray-50 text-slate-400 border border-gray-100"}`}
+            >
+              {t.charAt(0).toUpperCase()+t.slice(1)}
+            </button>
+          ))}
+        </div>
+
         {/* Stats Row */}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"14px", padding:"16px 24px 0", flexShrink:0 }}>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 md:p-6 pb-0 shrink-0">
           {[
-            { label:"Active Waiters", value:stats.activeWaiters, total:`/${waiters.length}`, color:"#10b981", icon:<Activity size={16}/> },
-            { label:"Total Orders", value:stats.totalOrders, total:"today", color:"#6366f1", icon:<Utensils size={16}/> },
-            { label:"Avg Rating", value:stats.avgRating, total:"★", color:"#f59e0b", icon:<Star size={16}/> },
-            { label:"Open Alerts", value:stats.alerts, total:"pending", color:"#ef4444", icon:<Bell size={16}/> },
+            { label:"Active", value:stats.activeWaiters, total:`/${waiters.length}`, color:"text-emerald-500", bg:"bg-emerald-50", icon:<Activity size={16}/> },
+            { label:"Orders", value:stats.totalOrders, total:"today", color:"text-indigo-500", bg:"bg-indigo-50", icon:<Utensils size={16}/> },
+            { label:"Rating", value:stats.avgRating, total:"★", color:"text-amber-500", bg:"bg-amber-50", icon:<Star size={16}/> },
+            { label:"Alerts", value:stats.alerts, total:"pending", color:"text-red-500", bg:"bg-red-50", icon:<Bell size={16}/> },
           ].map((s,i) => (
-            <div key={i} style={{ background:"white", borderRadius:"16px", padding:"14px 16px", border:"1px solid #EBEBF0" }}>
-              <div style={{ display:"flex", alignItems:"center", gap:"8px", marginBottom:"8px" }}>
-                <div style={{ width:"28px", height:"28px", borderRadius:"8px", background:`${s.color}18`, display:"flex", alignItems:"center", justifyContent:"center", color:s.color }}>{s.icon}</div>
-                <span style={{ fontSize:"10px", fontWeight:700, color:"#a0a8b2", textTransform:"uppercase", letterSpacing:"0.06em" }}>{s.label}</span>
+            <div key={i} className="bg-white rounded-[20px] p-4 border border-gray-100 shadow-sm">
+              <div className="flex items-center gap-3 mb-3">
+                <div className={`w-8 h-8 rounded-lg ${s.bg} flex items-center justify-center ${s.color}`}>{s.icon}</div>
+                <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{s.label}</span>
               </div>
-              <div style={{ display:"flex", alignItems:"baseline", gap:"4px" }}>
-                <span style={{ fontSize:"24px", fontWeight:900, color:"#1a1a2e" }}>{s.value}</span>
-                <span style={{ fontSize:"11px", color:"#a0a8b2", fontWeight:600 }}>{s.total}</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xl md:text-2xl font-black text-slate-900">{s.value}</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">{s.total}</span>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Waiter Grid */}
-        <div style={{ flex:1, overflow:"auto", padding:"16px 24px 24px" }}>
+        {/* Main Content Area */}
+        <div className="flex-1 overflow-y-auto p-4 md:p-6 no-scrollbar">
           {activeTab === "overview" ? (
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"14px" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {waiters.map(w => {
                 const cfg = STATUS_CFG[w.status];
                 return (
-                  <div key={w.id} onClick={() => setSelected(w)} style={{ background:"white", borderRadius:"20px", padding:"20px", border:`1px solid ${selected?.id===w.id?"#6366f1":"#EBEBF0"}`, cursor:"pointer", transition:"all 0.2s", boxShadow: selected?.id===w.id?"0 0 0 2px #6366f144":"none" }}
-                    onMouseEnter={e=>(e.currentTarget.style.transform="translateY(-2px)")}
-                    onMouseLeave={e=>(e.currentTarget.style.transform="")}>
-                    <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"14px" }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                        <div style={{ width:"44px", height:"44px", borderRadius:"14px", background:"linear-gradient(135deg,#6366f1,#8b5cf6)", display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:"16px", fontWeight:800 }}>
+                  <div 
+                    key={w.id} 
+                    onClick={() => { setSelected(w); if(window.innerWidth < 768) setIsAlertPanelOpen(true); }} 
+                    className={`bg-white rounded-[24px] p-5 border transition-all cursor-pointer group ${selected?.id===w.id ? "border-indigo-500 ring-4 ring-indigo-500/5 shadow-lg" : "border-gray-100 hover:border-gray-200"}`}
+                  >
+                    <div className="flex items-center justify-between mb-5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-50 to-violet-50 flex items-center justify-center text-indigo-600 text-lg font-black border border-indigo-100/50">
                           {w.name.charAt(0)}
                         </div>
-                        <div>
-                          <div style={{ fontSize:"13px", fontWeight:800, color:"#1a1a2e" }}>{w.name}</div>
-                          <div style={{ fontSize:"10px", color:"#a0a8b2" }}>{w.section}</div>
+                        <div className="min-w-0">
+                          <div className="text-sm font-black text-slate-900 truncate">{w.name}</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase truncate">{w.section}</div>
                         </div>
                       </div>
-                      <span style={{ padding:"4px 10px", borderRadius:"20px", background:cfg.bg, color:cfg.color, fontSize:"10px", fontWeight:700 }}>{cfg.label}</span>
+                      <span className="px-2.5 py-1 rounded-full text-[10px] font-black shrink-0" style={{ backgroundColor: cfg.bg, color: cfg.color }}>{cfg.label}</span>
                     </div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"8px", marginBottom:"14px" }}>
+                    <div className="grid grid-cols-3 gap-2 mb-5">
                       {[
                         { label:"Tables", value:w.tablesServed },
                         { label:"Orders", value:w.ordersCompleted },
                         { label:"Rating", value:`${w.rating}★` },
                       ].map(m => (
-                        <div key={m.label} style={{ background:"#F5F6FA", borderRadius:"10px", padding:"8px", textAlign:"center" }}>
-                          <div style={{ fontSize:"14px", fontWeight:900, color:"#1a1a2e" }}>{m.value}</div>
-                          <div style={{ fontSize:"9px", color:"#a0a8b2", textTransform:"uppercase", fontWeight:700 }}>{m.label}</div>
+                        <div key={m.label} className="bg-gray-50 rounded-xl p-2.5 text-center border border-gray-100">
+                          <div className="text-sm font-black text-slate-900">{m.value}</div>
+                          <div className="text-[8px] text-slate-400 font-bold uppercase">{m.label}</div>
                         </div>
                       ))}
                     </div>
                     {w.activeTable && (
-                      <div style={{ display:"flex", alignItems:"center", gap:"6px", padding:"7px 10px", background:"#e0e7ff", borderRadius:"10px", fontSize:"11px", fontWeight:700, color:"#6366f1" }}>
+                      <div className="flex items-center gap-2 p-2 bg-indigo-50/50 rounded-xl text-[10px] font-black text-indigo-600 border border-indigo-100/50">
                         <Coffee size={12}/> Currently at {w.activeTable}
                       </div>
                     )}
-                    {/* Quick Status Buttons */}
-                    <div style={{ display:"flex", gap:"6px", marginTop:"12px" }} onClick={e=>e.stopPropagation()}>
+                    {/* Quick Status Bar */}
+                    <div className="flex gap-1.5 mt-4 pt-4 border-t border-gray-50" onClick={e=>e.stopPropagation()}>
                       {(["active","on-break","idle"] as WaiterStatus[]).map(s => (
-                        <button key={s} onClick={()=>setStatus(w.id,s)} style={{ flex:1, padding:"5px", borderRadius:"8px", border:"none", fontSize:"9px", fontWeight:700, cursor:"pointer", background: w.status===s?"#1a1a2e":"#F5F6FA", color: w.status===s?"white":"#6b7280", transition:"all 0.15s" }}>
+                        <button 
+                          key={s} 
+                          onClick={()=>setStatus(w.id,s)} 
+                          className={`flex-1 py-2 rounded-lg text-[9px] font-black transition-all ${w.status===s ? "bg-slate-900 text-white" : "bg-gray-100 text-slate-400 hover:bg-gray-200"}`}
+                        >
                           {STATUS_CFG[s].label}
                         </button>
                       ))}
@@ -155,65 +202,98 @@ export function SupervisorDashboard() {
               })}
             </div>
           ) : (
-            /* Performance Table */
-            <div style={{ background:"white", borderRadius:"20px", border:"1px solid #EBEBF0", overflow:"hidden" }}>
-              <div style={{ padding:"16px 20px", borderBottom:"1px solid #F5F6FA" }}>
-                <h2 style={{ fontSize:"14px", fontWeight:800, color:"#1a1a2e", margin:0 }}>Staff Performance</h2>
+            /* Performance View */
+            <div className="bg-white rounded-[24px] border border-gray-100 overflow-hidden shadow-sm">
+              <div className="p-5 border-b border-gray-50 bg-gray-50/50">
+                <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Staff Performance Leaderboard</h2>
               </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr", padding:"10px 20px", background:"#FAFBFF", borderBottom:"1px solid #F5F6FA" }}>
-                {["Waiter","Section","Status","Tables","Orders","Rating"].map(h=>(
-                  <span key={h} style={{ fontSize:"10px", fontWeight:800, color:"#a0a8b2", textTransform:"uppercase", letterSpacing:"0.07em" }}>{h}</span>
-                ))}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="border-b border-gray-50">
+                      {["Waiter","Section","Status","Tables","Orders","Rating"].map(h=>(
+                        <th key={h} className="px-5 py-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {[...waiters].sort((a,b)=>b.ordersCompleted-a.ordersCompleted).map((w,i)=>{
+                      const cfg=STATUS_CFG[w.status];
+                      return (
+                        <tr key={w.id} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-3">
+                              {i===0&&<Award size={14} className="text-amber-500 shrink-0"/>}
+                              <div className="text-sm font-black text-slate-900">{w.name}</div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-4 text-xs font-bold text-slate-500">{w.section.split(" ")[0]}</td>
+                          <td className="px-5 py-4">
+                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black" style={{ backgroundColor: cfg.bg, color: cfg.color }}>{cfg.label}</span>
+                          </td>
+                          <td className="px-5 py-4 text-sm font-black text-slate-900">{w.tablesServed}</td>
+                          <td className="px-5 py-4 text-sm font-black text-indigo-600">{w.ordersCompleted}</td>
+                          <td className="px-5 py-4">
+                            <div className="flex items-center gap-1.5">
+                              <Star size={14} className="fill-amber-500 text-transparent"/>
+                              <span className="text-sm font-black text-slate-900">{w.rating}</span>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
-              {[...waiters].sort((a,b)=>b.ordersCompleted-a.ordersCompleted).map((w,i)=>{
-                const cfg=STATUS_CFG[w.status];
-                return (
-                  <div key={w.id} style={{ display:"grid", gridTemplateColumns:"1.5fr 1fr 1fr 1fr 1fr 1fr", padding:"14px 20px", borderBottom: i<waiters.length-1?"1px solid #F5F6FA":"none", alignItems:"center" }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-                      {i===0&&<Award size={14} color="#f59e0b"/>}
-                      <div style={{ fontSize:"13px", fontWeight:700, color:"#1a1a2e" }}>{w.name}</div>
-                    </div>
-                    <div style={{ fontSize:"11px", color:"#6b7280" }}>{w.section.split(" ")[0]}</div>
-                    <span style={{ padding:"3px 8px", borderRadius:"20px", background:cfg.bg, color:cfg.color, fontSize:"10px", fontWeight:700, width:"fit-content" }}>{cfg.label}</span>
-                    <div style={{ fontSize:"13px", fontWeight:700, color:"#1a1a2e" }}>{w.tablesServed}</div>
-                    <div style={{ fontSize:"13px", fontWeight:800, color:"#6366f1" }}>{w.ordersCompleted}</div>
-                    <div style={{ display:"flex", alignItems:"center", gap:"4px" }}>
-                      <Star size={12} fill="#f59e0b" stroke="none"/>
-                      <span style={{ fontSize:"13px", fontWeight:800, color:"#1a1a2e" }}>{w.rating}</span>
-                    </div>
-                  </div>
-                );
-              })}
             </div>
           )}
         </div>
       </div>
 
-      {/* RIGHT: Alerts + Detail */}
-      <div style={{ width:"300px", background:"white", borderLeft:"1px solid #EBEBF0", display:"flex", flexDirection:"column", flexShrink:0 }}>
-        {/* Alerts */}
-        <div style={{ padding:"18px 18px 12px", borderBottom:"1px solid #EBEBF0" }}>
-          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"12px" }}>
-            <h2 style={{ fontSize:"14px", fontWeight:900, color:"#1a1a2e", margin:0 }}>Live Alerts</h2>
-            <span style={{ padding:"3px 8px", borderRadius:"20px", background:"#fee2e2", color:"#ef4444", fontSize:"11px", fontWeight:700 }}>{alerts.length}</span>
+      {/* RIGHT: Sidebar (Alerts & Detail) */}
+      <aside className={`
+        fixed inset-y-0 right-0 z-[1000] w-full sm:w-[320px] bg-white border-l border-gray-200 flex flex-col transition-transform duration-300 md:relative md:translate-x-0
+        ${isAlertPanelOpen ? 'translate-x-0' : 'translate-x-full'}
+      `}>
+        {/* Alerts Section */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-sm font-black text-slate-900 uppercase tracking-widest">Live Alerts</h2>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full bg-red-50 text-red-500 text-[10px] font-black border border-red-100">{alerts.length}</span>
+              <button onClick={() => setIsAlertPanelOpen(false)} className="md:hidden p-2 hover:bg-gray-100 rounded-lg text-slate-400">
+                <X size={20}/>
+              </button>
+            </div>
           </div>
-          <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
-            {alerts.length===0 && <p style={{ fontSize:"12px", color:"#a0a8b2", textAlign:"center", padding:"16px 0" }}>All clear ✅</p>}
+          <div className="space-y-3 max-h-[300px] overflow-y-auto no-scrollbar">
+            {alerts.length===0 && (
+              <div className="text-center py-8">
+                <div className="w-12 h-12 bg-emerald-50 rounded-full flex items-center justify-center text-emerald-500 mx-auto mb-3">
+                  <CheckCircle2 size={24}/>
+                </div>
+                <p className="text-xs font-black text-emerald-600 uppercase tracking-widest">All Clear</p>
+              </div>
+            )}
             {alerts.map(a=>{
               const cfg=ALERT_CFG[a.type];
               return (
-                <div key={a.id} style={{ padding:"10px 12px", borderRadius:"12px", background:cfg.bg, border:`1px solid ${cfg.color}33`, position:"relative" }}>
-                  <div style={{ display:"flex", alignItems:"flex-start", gap:"8px" }}>
-                    <div style={{ color:cfg.color, marginTop:"1px" }}>{cfg.icon}</div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:"11px", fontWeight:700, color:"#1a1a2e" }}>{a.table}</div>
-                      <div style={{ fontSize:"10px", color:"#6b7280", margin:"2px 0" }}>{a.message}</div>
-                      <div style={{ fontSize:"9px", color:"#a0a8b2" }}>{a.waiter} · {a.time}</div>
+                <div key={a.id} className="p-4 rounded-2xl border transition-all" style={{ backgroundColor: cfg.bg, borderColor: `${cfg.color}33` }}>
+                  <div className="flex gap-3">
+                    <div style={{ color: cfg.color }} className="shrink-0 mt-0.5">{cfg.icon}</div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-[11px] font-black text-slate-900 uppercase tracking-wide">{a.table}</div>
+                      <div className="text-xs font-bold text-slate-600 mt-0.5 leading-tight">{a.message}</div>
+                      <div className="text-[9px] text-slate-400 font-bold mt-2 uppercase">{a.waiter} · {a.time}</div>
                     </div>
-                    <button onClick={()=>dismissAlert(a.id)} style={{ background:"none", border:"none", cursor:"pointer", color:"#a0a8b2", padding:0 }}><X size={13}/></button>
+                    <button onClick={()=>dismissAlert(a.id)} className="text-slate-400 hover:text-slate-900 shrink-0"><X size={14}/></button>
                   </div>
-                  <button onClick={()=>dismissAlert(a.id)} style={{ marginTop:"8px", width:"100%", padding:"5px", borderRadius:"8px", border:"none", background:`${cfg.color}22`, color:cfg.color, fontSize:"10px", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"4px" }}>
-                    <CheckCircle2 size={11}/> Resolve
+                  <button 
+                    onClick={()=>dismissAlert(a.id)} 
+                    className="w-full mt-3 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-2"
+                    style={{ backgroundColor: `${cfg.color}15`, color: cfg.color }}
+                  >
+                    <CheckCircle2 size={12}/> Resolve
                   </button>
                 </div>
               );
@@ -221,52 +301,64 @@ export function SupervisorDashboard() {
           </div>
         </div>
 
-        {/* Waiter Detail */}
-        <div style={{ flex:1, overflow:"auto", padding:"18px" }}>
+        {/* Waiter Detail Section */}
+        <div className="flex-1 overflow-y-auto p-6 bg-gray-50/50">
           {selected ? (
-            <>
-              <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:"14px" }}>
-                <h3 style={{ fontSize:"13px", fontWeight:800, color:"#1a1a2e", margin:0 }}>Waiter Detail</h3>
-                <button onClick={()=>setSelected(null)} style={{ background:"none", border:"none", cursor:"pointer", color:"#a0a8b2" }}><X size={14}/></button>
+            <div className="animate-in fade-in slide-in-from-bottom duration-300">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Waiter Detail</h3>
+                <button onClick={()=>setSelected(null)} className="text-slate-400 hover:text-slate-900"><X size={16}/></button>
               </div>
-              <div style={{ textAlign:"center", marginBottom:"16px" }}>
-                <div style={{ width:"56px", height:"56px", borderRadius:"18px", background:"linear-gradient(135deg,#6366f1,#8b5cf6)", display:"flex", alignItems:"center", justifyContent:"center", color:"white", fontSize:"22px", fontWeight:800, margin:"0 auto 8px" }}>
+              <div className="text-center mb-8">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-3xl font-black mx-auto mb-4 shadow-xl shadow-indigo-500/20">
                   {selected.name.charAt(0)}
                 </div>
-                <div style={{ fontSize:"15px", fontWeight:900, color:"#1a1a2e" }}>{selected.name}</div>
-                <div style={{ fontSize:"11px", color:"#a0a8b2" }}>{selected.section}</div>
+                <div className="text-lg font-black text-slate-900">{selected.name}</div>
+                <div className="text-xs font-bold text-slate-400 uppercase mt-1">{selected.section}</div>
               </div>
-              {[
-                { label:"Phone", value:selected.phone, icon:<Phone size={12}/> },
-                { label:"Started", value:selected.joinedAt, icon:<Clock size={12}/> },
-                { label:"Active Table", value:selected.activeTable||"None", icon:<Coffee size={12}/> },
-              ].map(row=>(
-                <div key={row.label} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"9px 12px", background:"#F5F6FA", borderRadius:"10px", marginBottom:"6px" }}>
-                  <span style={{ color:"#6366f1" }}>{row.icon}</span>
-                  <span style={{ fontSize:"10px", color:"#a0a8b2", fontWeight:600, width:"60px" }}>{row.label}</span>
-                  <span style={{ fontSize:"12px", fontWeight:700, color:"#1a1a2e" }}>{row.value}</span>
+              <div className="space-y-2">
+                {[
+                  { label:"Phone", value:selected.phone, icon:<Phone size={14}/> },
+                  { label:"Shift Start", value:selected.joinedAt, icon:<Clock size={14}/> },
+                  { label:"Active Table", value:selected.activeTable||"None", icon:<Coffee size={14}/> },
+                ].map(row=>(
+                  <div key={row.label} className="flex items-center gap-3 p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+                    <span className="text-indigo-500 shrink-0">{row.icon}</span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-[9px] text-slate-400 font-black uppercase tracking-widest">{row.label}</p>
+                      <p className="text-sm font-black text-slate-900 truncate">{row.value}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-8 space-y-3">
+                <button className="w-full py-4 rounded-2xl bg-slate-900 text-white text-xs font-black uppercase shadow-lg shadow-slate-900/10 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+                  <MessageSquare size={16}/> Send Message
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button onClick={()=>setStatus(selected.id,"on-break")} className="py-3.5 rounded-2xl bg-white border border-gray-200 text-slate-600 text-[10px] font-black uppercase hover:bg-gray-50 transition-all flex flex-col items-center gap-1">
+                    <Coffee size={14}/> Break
+                  </button>
+                  <button onClick={()=>setStatus(selected.id,"active")} className="py-3.5 rounded-2xl bg-emerald-500 text-white text-[10px] font-black uppercase shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all flex flex-col items-center gap-1">
+                    <RotateCcw size={14}/> Active
+                  </button>
                 </div>
-              ))}
-              <div style={{ marginTop:"12px", display:"flex", flexDirection:"column", gap:"6px" }}>
-                <button style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"none", background:"#1a1a2e", color:"white", fontSize:"12px", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px" }}>
-                  <MessageSquare size={13}/> Send Message
-                </button>
-                <button onClick={()=>setStatus(selected.id,"on-break")} style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"1px solid #EBEBF0", background:"white", color:"#6b7280", fontSize:"12px", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px" }}>
-                  <Coffee size={13}/> Send to Break
-                </button>
-                <button onClick={()=>setStatus(selected.id,"active")} style={{ width:"100%", padding:"9px", borderRadius:"10px", border:"1px solid #d1fae5", background:"#d1fae5", color:"#10b981", fontSize:"12px", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", gap:"6px" }}>
-                  <RotateCcw size={13}/> Resume Active
-                </button>
               </div>
-            </>
+            </div>
           ) : (
-            <div style={{ textAlign:"center", padding:"24px 0", color:"#a0a8b2" }}>
-              <Users size={28} style={{ margin:"0 auto 8px", opacity:0.4 }}/>
-              <p style={{ fontSize:"12px", fontWeight:600 }}>Select a waiter to view details</p>
+            <div className="h-full flex flex-col items-center justify-center text-center opacity-40">
+              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-4">
+                <Users size={32}/>
+              </div>
+              <p className="text-xs font-black uppercase tracking-widest text-slate-400">Select a waiter to view details</p>
             </div>
           )}
         </div>
-      </div>
+      </aside>
+
+      {/* Backdrop for mobile */}
+      {isAlertPanelOpen && <div className="md:hidden fixed inset-0 bg-black/40 z-[999] backdrop-blur-sm" onClick={() => setIsAlertPanelOpen(false)} />}
+      
     </div>
   );
 }

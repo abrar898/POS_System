@@ -1,171 +1,208 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { ChevronLeft, MapPin, Navigation, Clock, Phone, Info, LayoutGrid, Home, BarChart2, ShoppingBag, UtensilsCrossed, Settings } from "lucide-react";
+import { 
+  ChevronLeft, MapPin, Navigation, Clock, Phone, Info, LayoutGrid, 
+  Home, BarChart2, ShoppingBag, UtensilsCrossed, Settings, User, 
+  ChevronDown, CheckCircle2, Bike, Package, ChefHat, Menu, X
+} from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { getRoute } from "@/lib/routing";
+
+// Colors from design.txt
+const COLORS = {
+  cream: "#FDEFDE",
+  offWhite: "#FEFDFA",
+  brandYellow: "#FECE04",
+  midGray: "#737373",
+  pureBlack: "#000000",
+  successGreen: "#7ED957",
+  deepMaroon: "#811920",
+};
 
 const GoogleMapComponent = dynamic(() => import("@/components/google-map"), { 
   ssr: false,
-  loading: () => <div className="h-full w-full bg-slate-50 animate-pulse" />
+  loading: () => <div className="h-full w-full bg-gray-50 animate-pulse rounded-3xl" />
 });
 
 export function OrderTrackPage({ orderId }: { orderId: string }) {
-  const [activeSidebar, setActiveSidebar] = useState("track");
-  const [eta, setEta] = useState(20);
-  const [route, setRoute] = useState<[number, number][]>([]);
-  const [riderPos, setRiderPos] = useState<[number, number]>([33.6844, 73.0479]);
-
-  useEffect(() => {
-    async function updateRoute() {
-      const r = await getRoute([33.6844, 73.0479], [33.6950, 73.0600]); // Restaurant to Customer
-      setRoute(r);
-    }
-    updateRoute();
-  }, []);
-
-  // Animate rider along the route
-  useEffect(() => {
-    if (route.length > 0) {
-      let idx = 0;
-      const interval = setInterval(() => {
-        if (idx < route.length) {
-          setRiderPos(route[idx]);
-          idx++;
-        } else {
-          clearInterval(interval);
-        }
-      }, 150);
-      return () => clearInterval(interval);
-    }
-  }, [route]);
-
-  useEffect(() => {
-    if (eta > 0) {
-      const t = setInterval(() => setEta(p => Math.max(0, p - 1)), 30000);
-      return () => clearInterval(t);
-    }
-  }, [eta]);
+  const [status, setStatus] = useState<"placed" | "preparing" | "delivery" | "delivered">("preparing");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-slate-50 font-['Outfit'] select-none">
-      {/* Left Sidebar */}
-      <aside className="flex flex-col items-center shrink-0" style={{ width: "72px", background: "#fff", paddingTop: "20px", paddingBottom: "20px", borderRight: "1px solid #E8E8E8" }}>
-        <div className="flex items-center justify-center rounded-xl mb-6 shadow-sm" style={{ width: "40px", height: "40px", background: "#1C1C2E" }}>
-          <LayoutGrid size={18} color="white" strokeWidth={2} />
-        </div>
-        <div className="flex flex-col items-center gap-3 flex-1 w-full px-2">
-          {[
-            { id: "home", icon: <Home size={20} strokeWidth={2} />, href: "/online/royal-burger?tab=home" },
-            { id: "stats", icon: <BarChart2 size={20} strokeWidth={2} />, href: "/online/royal-burger?tab=stats" },
-            { id: "bag", icon: <ShoppingBag size={20} strokeWidth={2} />, href: "/online/royal-burger?tab=bag" },
-            { id: "menu", icon: <UtensilsCrossed size={20} strokeWidth={2} />, href: "/online/royal-burger?tab=menu" },
-            { id: "track", icon: <MapPin size={20} strokeWidth={2} />, href: "#" },
-          ].map((item) => (
-            <Link 
-              href={item.href} 
-              key={item.id} 
-              onClick={() => setActiveSidebar(item.id)}
-              className="flex items-center justify-center rounded-[12px] transition-all w-full relative" 
-              style={{ 
-                height: "44px", 
-                color: activeSidebar === item.id ? "white" : "#9CA3AF", 
-                background: activeSidebar === item.id ? "#1C1C2E" : "transparent" 
-              }}
-            >
-              {item.icon}
-            </Link>
-          ))}
-        </div>
-        <button className="flex items-center justify-center rounded-xl w-full mx-2" style={{ height: "44px", color: "#9CA3AF" }}>
-          <Settings size={20} strokeWidth={2} />
-        </button>
-      </aside>
-
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col h-full overflow-hidden">
-        {/* Top Header */}
-        <header className="flex items-center justify-between bg-white px-4 md:px-8 py-4 border-b border-slate-200 shrink-0 z-10 shadow-sm">
-          <Link href="/online/royal-burger" className="flex items-center gap-2 text-slate-500 hover:text-slate-800 font-bold transition-colors">
-            <ChevronLeft size={22} /> <span className="hidden sm:inline">Return</span>
-          </Link>
-          <div className="text-center flex-1">
-            <span className="block text-lg font-black text-slate-900 tracking-tight">Live Tracking</span>
-            <span className="block text-xs font-bold text-slate-500">Order #{orderId}</span>
-          </div>
-          <button className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 hover:bg-slate-200 transition-colors">
-            <Info size={20} />
+    <div className="min-h-screen flex flex-col bg-[#FEFDFA]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Navbar */}
+      <nav className="h-16 px-4 md:px-8 flex items-center justify-between border-b border-gray-100 sticky top-0 bg-white z-[60]">
+        <div className="flex items-center gap-4 md:gap-12">
+          <button 
+            className="md:hidden p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          >
+            {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
-        </header>
-
-        {/* Main Map Content */}
-        <main className="flex-1 relative flex flex-col md:flex-row">
-          
-          {/* Map Area */}
-          <div className="flex-1 relative z-0 min-h-[400px]">
-            <GoogleMapComponent 
-              restaurantPos={[33.6844, 73.0479]}
-              customerPos={[33.6950, 73.0600]}
-              riderPos={riderPos}
-              route={route}
-              height="100%"
-              zoom={15}
-            />
-            
-            {/* Live indicator floating on map */}
-            <div className="absolute top-4 right-4 z-[400] bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-emerald-100 flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-sm font-bold text-emerald-600">Live</span>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#811920] rounded-lg flex items-center justify-center transform rotate-12">
+              <span className="text-white font-bold text-xl">C</span>
             </div>
+            <span className="text-xl md:text-2xl font-black italic tracking-tighter" style={{ color: COLORS.deepMaroon }}>Cheezious</span>
           </div>
+          <div className="hidden md:flex items-center gap-8 text-[15px] font-bold">
+            <Link href="/home" className="text-gray-900 hover:text-[#811920] transition-colors">Home</Link>
+            <Link href="/home" className="text-gray-900 hover:text-[#811920] transition-colors">Menu</Link>
+            <Link href="#" className="text-[#811920] border-b-2 border-[#811920] pb-0.5">Track Order</Link>
+            <Link href="/deals" className="text-gray-900 hover:text-[#811920] transition-colors">Deals</Link>
+          </div>
+        </div>
+        <div className="flex items-center gap-2 md:gap-6">
+          <div className="hidden sm:flex items-center gap-2 text-sm font-bold text-gray-700">
+            <MapPin size={16} className="text-[#811920]" />
+            <span className="max-w-[80px] truncate">Islamabad</span>
+            <ChevronDown size={14} />
+          </div>
+          <button className="flex items-center gap-2 text-sm font-bold text-gray-700">
+            <User size={18} className="text-[#811920]" />
+            <span className="hidden sm:inline">Sign In</span>
+          </button>
+        </div>
+      </nav>
 
-          {/* Floating/Side Panel for Rider Time & Location */}
-          <div className="w-full md:w-[400px] shrink-0 bg-white shadow-[0_-10px_40px_rgba(0,0,0,0.08)] md:shadow-[-10px_0_40px_rgba(0,0,0,0.08)] rounded-t-[32px] md:rounded-none flex flex-col z-10 relative">
-            
-            {/* Mobile Drag Handle */}
-            <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-2 md:hidden" />
+      {/* Mobile Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-[55] bg-black/20 backdrop-blur-sm md:hidden" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="absolute top-16 left-0 right-0 bg-white border-b border-gray-100 p-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
+            <Link href="/home" className="text-lg font-black text-gray-900">Home</Link>
+            <Link href="/home" className="text-lg font-black text-gray-900">Menu</Link>
+            <Link href="#" className="text-lg font-black text-[#811920]">Track Order</Link>
+            <Link href="/deals" className="text-lg font-black text-gray-900">Deals</Link>
+          </div>
+        </div>
+      )}
 
-            <div className="p-6 md:p-8 flex-1 overflow-y-auto">
-              {/* ETA Section */}
-              <div className="bg-slate-50 rounded-[24px] p-6 border border-slate-100 mb-6 text-center shadow-sm">
-                <Clock size={32} className="text-amber-500 mx-auto mb-3" />
-                <div className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-1">Estimated Arrival</div>
-                <div className="text-4xl font-black text-slate-900">{eta} <span className="text-xl text-slate-500">mins</span></div>
+      {/* Tracking Content */}
+      <div className="flex-1 max-w-[1000px] mx-auto w-full p-4 md:p-12 animate-in fade-in slide-in-from-bottom duration-500">
+        
+        {/* Sub Header / Back Button */}
+        <div className="mb-6 md:mb-10">
+          <Link href="/home" className="flex items-center gap-2 text-gray-400 hover:text-gray-900 font-bold transition-colors text-sm md:text-base">
+            <ChevronLeft size={20} md:size={22} /> <span>Back to Menu</span>
+          </Link>
+        </div>
+
+        {/* Order Header */}
+        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-10 md:mb-16">
+           <h1 className="text-3xl md:text-4xl font-black text-[#811920]">Order #{orderId || "CHZ-39403"}</h1>
+           <div className="md:text-right">
+             <p className="text-xs md:text-sm font-bold text-gray-400">Estimated Delivery Time</p>
+             <p className="text-2xl md:text-3xl font-black text-[#811920]">30-40 min</p>
+           </div>
+        </div>
+
+        {/* Horizontal Status Stepper */}
+        <div className="relative mb-12 md:mb-20 px-2 md:px-0">
+           <div className="absolute top-1/2 left-0 right-0 h-1 bg-gray-100 -translate-y-1/2 -z-10" />
+           {/* Progress Line */}
+           <div 
+             className="absolute top-1/2 left-0 h-1 bg-[#FECE04] -translate-y-1/2 -z-10 transition-all duration-1000" 
+             style={{ width: status === "placed" ? "0%" : status === "preparing" ? "33%" : status === "delivery" ? "66%" : "100%" }}
+           />
+           <div 
+             className="absolute top-1/2 left-0 h-1 bg-[#7ED957] -translate-y-1/2 -z-10 transition-all duration-1000" 
+             style={{ width: status === "placed" ? "0%" : "33%" }}
+           />
+
+           <div className="flex justify-between items-center">
+              {/* Step 1: Placed */}
+              <div className="flex flex-col items-center group relative">
+                 <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-[#7ED957] flex items-center justify-center text-white shadow-lg border-2 md:border-4 border-white">
+                    <CheckCircle2 size={20} md:size={28} />
+                 </div>
+                 <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">Placed</span>
               </div>
-
-              {/* Location Details */}
-              <div className="space-y-4 mb-8">
-                <div className="flex items-center gap-4 bg-white p-4 rounded-[20px] border border-slate-100 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center shrink-0">
-                    <Navigation size={22} className="text-amber-500" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Rider Location</div>
-                    <div className="text-sm font-bold text-slate-900 mt-0.5">Moving on GT Road</div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 bg-white p-4 rounded-[20px] border border-slate-100 shadow-sm">
-                  <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
-                    <MapPin size={22} className="text-emerald-500" />
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wide">Delivery Address</div>
-                    <div className="text-sm font-bold text-slate-900 mt-0.5 truncate">Military College of Signals</div>
-                  </div>
-                </div>
+              {/* Step 2: Preparing */}
+              <div className="flex flex-col items-center group relative">
+                 <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${["preparing", "delivery", "delivered"].includes(status) ? "bg-[#FECE04] text-black" : "bg-gray-100 text-gray-400"}`}>
+                    <ChefHat size={20} md:size={28} />
+                 </div>
+                 <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">Preparing</span>
               </div>
+              {/* Step 3: Delivery */}
+              <div className="flex flex-col items-center group relative">
+                 <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${["delivery", "delivered"].includes(status) ? "bg-[#FECE04] text-black" : "bg-gray-400 text-white"}`}>
+                    <Bike size={20} md:size={28} />
+                 </div>
+                 <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">On the way</span>
+              </div>
+              {/* Step 4: Delivered */}
+              <div className="flex flex-col items-center group relative">
+                 <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${status === "delivered" ? "bg-[#7ED957] text-white" : "bg-gray-400 text-white"}`}>
+                    <Package size={20} md:size={28} />
+                 </div>
+                 <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">Delivered</span>
+              </div>
+           </div>
+        </div>
 
-              {/* Contact Rider Button */}
-              <a href="tel:+923124455667" className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-[20px] p-4 flex items-center justify-center gap-3 transition-colors shadow-lg active:scale-[0.98]">
-                <Phone size={20} />
-                <span className="font-bold text-[15px]">Contact Rider</span>
-              </a>
+        {/* Details Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12 mt-8">
+           {/* Rider Card */}
+           <div className="bg-white rounded-[24px] md:rounded-[32px] p-6 md:p-8 border border-gray-100 shadow-xl shadow-gray-100/50 flex flex-col justify-between min-h-[180px] md:min-h-[220px]">
+              <div className="flex items-center gap-4 md:gap-6">
+                 <div className="w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden bg-blue-100 shrink-0">
+                    <img 
+                      src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&h=200&fit=crop" 
+                      alt="Rider Ali" 
+                      className="w-full h-full object-cover"
+                    />
+                 </div>
+                 <div>
+                   <p className="text-xs md:text-sm font-bold text-gray-400">Rider Details</p>
+                   <p className="text-xl md:text-2xl font-black text-gray-900">Ali</p>
+                 </div>
+              </div>
+              <div className="flex justify-end mt-4 md:mt-0">
+                <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-50 flex items-center justify-center text-gray-900 hover:bg-gray-100 transition-all shadow-sm">
+                   <Phone size={20} md:size={24} className="fill-current" />
+                </button>
+              </div>
+           </div>
+
+           {/* Map Card */}
+           <div className="bg-white rounded-[24px] md:rounded-[32px] overflow-hidden border border-gray-100 shadow-xl shadow-gray-100/50 min-h-[220px]">
+              <div className="w-full h-full bg-blue-50 relative min-h-[200px]">
+                 <img 
+                   src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600&h=400&fit=crop" 
+                   alt="Location Map" 
+                   className="w-full h-full object-cover opacity-60"
+                 />
+                 {/* Mock route line */}
+                 <div className="absolute top-1/2 left-1/4 right-1/4 h-1 md:h-1.5 bg-[#FECE04] rounded-full transform -rotate-12 blur-[1px]" />
+                 <div className="absolute top-[45%] left-1/4 w-3 h-3 md:w-4 md:h-4 bg-white border-2 md:border-4 border-[#811920] rounded-full shadow-lg" />
+                 <div className="absolute top-[55%] right-1/4 w-3 h-3 md:w-4 md:h-4 bg-white border-2 md:border-4 border-[#7ED957] rounded-full shadow-lg" />
+              </div>
+           </div>
+        </div>
+
+        {/* Status Message Box */}
+        <div className="bg-white rounded-[24px] p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+           <div>
+             <p className="font-black text-gray-900 text-base md:text-lg mb-1">Your order is being prepared.</p>
+             <p className="text-xs md:text-sm font-bold text-gray-500">Our team may call you to ask for further details.</p>
+           </div>
+           <div className="md:text-right shrink-0">
+             <p className="text-xs md:text-sm font-black text-gray-400">12:50 PM</p>
+           </div>
+        </div>
+
+        {/* Bottom Logo / Branding */}
+        <div className="mt-12 md:mt-20 flex justify-center opacity-10">
+           <div className="flex items-center gap-2">
+            <div className="w-6 h-6 bg-[#811920] rounded flex items-center justify-center">
+              <span className="text-white font-bold text-xs">C</span>
             </div>
+            <span className="text-xl font-black italic tracking-tighter" style={{ color: COLORS.deepMaroon }}>Cheezious</span>
           </div>
+        </div>
 
-        </main>
       </div>
     </div>
   );

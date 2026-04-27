@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
-import { Truck, Clock, CheckCircle2, MapPin, Phone, Search, X, Package, Bike, TrendingUp, AlertCircle, Eye, ChevronRight, Star, Navigation, RefreshCw } from "lucide-react";
+import { Truck, Clock, CheckCircle2, MapPin, Phone, Search, X, Package, Bike, TrendingUp, AlertCircle, Eye, ChevronRight, Star, Navigation, RefreshCw, Menu } from "lucide-react";
 import { getRoute } from "@/lib/routing";
 
 const LeafletMap = dynamic(() => import("@/components/leaflet-map"), { ssr: false });
@@ -19,12 +19,12 @@ const MOCK_ORDERS = [
 
 type Order = typeof MOCK_ORDERS[0];
 
-const STATUS_CFG: Record<string, { label: string; color: string; bg: string }> = {
-  pending:   { label:"Pending",   color:"#f59e0b", bg:"#fef3c7" },
-  preparing: { label:"Preparing", color:"#6366f1", bg:"#e0e7ff" },
-  dispatched:{ label:"On the Way",color:"#0ea5e9", bg:"#e0f2fe" },
-  delivered: { label:"Delivered", color:"#10b981", bg:"#d1fae5" },
-  cancelled: { label:"Cancelled", color:"#ef4444", bg:"#fee2e2" },
+const STATUS_CFG: Record<string, { label: string; color: string; bg: string; border: string }> = {
+  pending:   { label:"Pending",   color:"#f59e0b", bg:"#fef3c7", border: "#f59e0b22" },
+  preparing: { label:"Preparing", color:"#6366f1", bg:"#e0e7ff", border: "#6366f122" },
+  dispatched:{ label:"On the Way",color:"#0ea5e9", bg:"#e0f2fe", border: "#0ea5e922" },
+  delivered: { label:"Delivered", color:"#10b981", bg:"#d1fae5", border: "#10b98122" },
+  cancelled: { label:"Cancelled", color:"#ef4444", bg:"#fee2e2", border: "#ef444422" },
 };
 
 export function DeliveryDashboard() {
@@ -32,6 +32,7 @@ export function DeliveryDashboard() {
   const [selected, setSelected] = useState<Order>(MOCK_ORDERS[0]);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [riderPos, setRiderPos] = useState<[number, number]>(
     selected.riderLat ? [selected.riderLat, selected.riderLng!] : RESTAURANT
   );
@@ -47,7 +48,6 @@ export function DeliveryDashboard() {
         const newRoute = await getRoute(start, end);
         setRoute(newRoute);
       } else if (selected.destLat) {
-         // If not dispatched yet, show route from restaurant to destination
          const newRoute = await getRoute(RESTAURANT, [selected.destLat, selected.destLng!]);
          setRoute(newRoute);
       } else {
@@ -57,7 +57,7 @@ export function DeliveryDashboard() {
     updateRoute();
   }, [selected]);
 
-  // Animate rider marker along the road route
+  // Animate rider marker
   useEffect(() => {
     if (selected.status !== "dispatched" || route.length === 0) {
       setRiderPos(selected.riderLat ? [selected.riderLat, selected.riderLng!] : RESTAURANT);
@@ -67,7 +67,6 @@ export function DeliveryDashboard() {
     if (animRef.current) clearInterval(animRef.current);
 
     let pointIndex = 0;
-    // We want the animation to be smooth, so we'll step through the route points
     animRef.current = setInterval(() => {
       if (pointIndex < route.length) {
         setRiderPos(route[pointIndex]);
@@ -75,7 +74,7 @@ export function DeliveryDashboard() {
       } else {
         if (animRef.current) clearInterval(animRef.current);
       }
-    }, 100); // Adjust speed of animation (100ms per point)
+    }, 100);
 
     return () => { if (animRef.current) clearInterval(animRef.current); };
   }, [selected, route]);
@@ -99,80 +98,100 @@ export function DeliveryDashboard() {
   );
 
   return (
-    <div style={{ display:"flex", height:"100vh", width:"100%", fontFamily:"'Inter', sans-serif", background:"#f3f4f6", overflow:"hidden", color: "#1e293b" }}>
+    <div className="flex flex-col md:flex-row h-screen w-full bg-gray-50 overflow-hidden text-slate-800 font-sans">
+      
+      {/* Mobile Toggle */}
+      <button 
+        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+        className="md:hidden fixed top-4 left-4 z-[1001] p-3 bg-white rounded-xl shadow-lg border border-gray-200"
+      >
+        {isSidebarOpen ? <X size={20} /> : <Menu size={20} />}
+      </button>
 
-      {/* ── LEFT PANEL ── (Updated to White per user request) */}
-      <div style={{ width:"340px", display:"flex", flexDirection:"column", background:"white", borderRight:"1px solid #e2e8f0", flexShrink:0 }}>
-        {/* Header */}
-        <div style={{ padding:"20px 20px 16px", borderBottom:"1px solid #f1f5f9" }}>
-          <div style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"15px" }}>
-            <div style={{ width:"40px", height:"40px", borderRadius:"12px", background:"#1e293b", display:"flex", alignItems:"center", justifyContent:"center" }}>
-              <Truck size={18} color="white"/>
+      {/* ── LEFT PANEL ── */}
+      <aside className={`fixed inset-y-0 left-0 z-[1000] w-full sm:w-[340px] bg-white border-r border-gray-200 flex flex-col transition-transform duration-300 md:relative md:translate-x-0 ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="p-6 pb-4 border-b border-gray-100 mt-12 md:mt-0">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center">
+              <Truck size={18} className="text-white"/>
             </div>
             <div>
-              <h1 style={{ fontSize:"16px", fontWeight:900, color:"#0f172a", margin:0 }}>Delivery Control</h1>
-              <div style={{ display:"flex", alignItems:"center", gap:"5px", marginTop:"1px" }}>
-                <span style={{ width:"6px", height:"6px", borderRadius:"50%", background:"#10b981", display:"inline-block", animation:"pulse 2s infinite" }}/>
-                <span style={{ fontSize:"10px", color:"#10b981", fontWeight:700 }}>OSM LIVE</span>
+              <h1 className="text-base font-black text-slate-900 leading-tight">Delivery Control</h1>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"/>
+                <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">OSM LIVE</span>
               </div>
             </div>
           </div>
 
-          {/* Stats */}
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"6px", marginBottom:"15px" }}>
+          <div className="grid grid-cols-4 gap-1.5 mb-4">
             {[
-              { label:"Orders", value:stats.total, color:"#6366f1" },
-              { label:"Active", value:stats.dispatched, color:"#0ea5e9" },
-              { label:"Done", value:stats.delivered, color:"#10b981" },
-              { label:"PKR", value:`${(stats.revenue/1000).toFixed(1)}K`, color:"#f59e0b" },
+              { label:"Orders", value:stats.total, color:"text-indigo-500" },
+              { label:"Active", value:stats.dispatched, color:"text-sky-500" },
+              { label:"Done", value:stats.delivered, color:"text-emerald-500" },
+              { label:"PKR", value:`${(stats.revenue/1000).toFixed(1)}K`, color:"text-amber-500" },
             ].map((s,i) => (
-              <div key={i} style={{ background:"#f8fafc", borderRadius:"10px", padding:"8px 6px", textAlign:"center", border: "1px solid #f1f5f9" }}>
-                <div style={{ fontSize:"14px", fontWeight:900, color:s.color }}>{s.value}</div>
-                <div style={{ fontSize:"9px", color:"#94a3b8", fontWeight:700, textTransform:"uppercase" }}>{s.label}</div>
+              <div key={i} className="bg-gray-50 rounded-lg p-2 text-center border border-gray-100">
+                <div className={`text-sm font-black ${s.color}`}>{s.value}</div>
+                <div className="text-[8px] text-slate-400 font-bold uppercase">{s.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Search + filter */}
-          <div style={{ position:"relative", marginBottom:"10px" }}>
-            <Search size={14} style={{ position:"absolute", left:"12px", top:"50%", transform:"translateY(-50%)", color:"#94a3b8" }}/>
-            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search ID or Customer…" style={{ width:"100%", height:"38px", borderRadius:"10px", border:"1px solid #e2e8f0", paddingLeft:"34px", paddingRight:"10px", fontSize:"12px", background:"#f8fafc", color:"#0f172a", outline:"none", boxSizing:"border-box" }}/>
+          <div className="relative mb-3">
+            <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"/>
+            <input 
+              value={search} 
+              onChange={e=>setSearch(e.target.value)} 
+              placeholder="Search ID or Customer…" 
+              className="w-full h-9 rounded-lg border border-gray-200 pl-9 pr-3 text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-slate-900/5"
+            />
           </div>
-          <div style={{ display:"flex", gap:"5px", flexWrap:"wrap" }}>
+          <div className="flex gap-1.5 flex-wrap">
             {["all","pending","preparing","dispatched","delivered"].map(s => (
-              <button key={s} onClick={()=>setFilter(s)} style={{ padding:"5px 10px", borderRadius:"8px", border:"none", fontSize:"10px", fontWeight:700, cursor:"pointer", background: filter===s?"#1e293b":"#f1f5f9", color: filter===s?"white":"#64748b", transition:"all 0.2s" }}>
+              <button 
+                key={s} 
+                onClick={()=>setFilter(s)} 
+                className={`px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all ${filter===s ? "bg-slate-900 text-white" : "bg-gray-100 text-slate-500 hover:bg-gray-200"}`}
+              >
                 {s==="all"?"All":STATUS_CFG[s].label}
               </button>
             ))}
           </div>
         </div>
 
-        {/* Order List */}
-        <div style={{ flex:1, overflowY:"auto", padding:"12px", background: "#fcfcfd" }}>
+        <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/50">
           {filtered.map(order => {
             const cfg = STATUS_CFG[order.status];
             const isActive = selected.id === order.id;
             return (
-              <div key={order.id} onClick={()=>setSelected(order)} style={{ padding:"14px", borderRadius:"16px", marginBottom:"8px", cursor:"pointer", background: isActive?"white":"transparent", border:`1px solid ${isActive?"#e2e8f0":"transparent"}`, boxShadow: isActive ? "0 4px 6px -1px rgba(0, 0, 0, 0.05)" : "none", transition:"all 0.2s" }}>
-                <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:"8px" }}>
+              <div 
+                key={order.id} 
+                onClick={()=>{setSelected(order); if(window.innerWidth < 768) setIsSidebarOpen(false)}} 
+                className={`p-4 rounded-2xl cursor-pointer transition-all border ${isActive ? "bg-white border-gray-200 shadow-md" : "bg-transparent border-transparent hover:bg-white/50"}`}
+              >
+                <div className="flex items-start justify-between mb-2">
                   <div>
-                    <div style={{ fontSize:"13px", fontWeight:800, color:"#0f172a" }}>{order.customer}</div>
-                    <div style={{ fontSize:"10px", color:"#94a3b8", fontFamily:"monospace", marginTop:"1px" }}>#{order.id}</div>
+                    <div className="text-[13px] font-black text-slate-900">{order.customer}</div>
+                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">#{order.id}</div>
                   </div>
-                  <span style={{ padding:"3px 8px", borderRadius:"20px", background:cfg.bg, color:cfg.color, fontSize:"9px", fontWeight:800, border:`1px solid ${cfg.color}22` }}>{cfg.label}</span>
+                  <span className="px-2 py-1 rounded-full text-[9px] font-black border" style={{ backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.border }}>{cfg.label}</span>
                 </div>
-                <div style={{ display:"flex", alignItems:"center", gap:"6px", marginBottom:"10px" }}>
-                  <MapPin size={11} color="#94a3b8"/>
-                  <span style={{ fontSize:"11px", color:"#64748b" }}>{order.address}</span>
+                <div className="flex items-center gap-1.5 mb-3">
+                  <MapPin size={11} className="text-slate-400"/>
+                  <span className="text-[11px] text-slate-500 truncate">{order.address}</span>
                 </div>
-                <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-                  <span style={{ fontSize:"14px", fontWeight:900, color:"#0f172a" }}>{order.total} <span style={{ fontSize:"10px", color:"#94a3b8" }}>PKR</span></span>
-                  <div style={{ display:"flex", alignItems:"center", gap:"6px" }}>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-black text-slate-900">{order.total} <span className="text-[10px] text-slate-400 font-bold">PKR</span></span>
+                  <div className="flex items-center gap-2">
                     {order.eta > 0 && (
-                      <span style={{ fontSize:"10px", color:"#f59e0b", fontWeight:800, display:"flex", alignItems:"center", gap:"4px" }}><Clock size={11}/> {order.eta}m</span>
+                      <span className="text-[10px] text-amber-600 font-black flex items-center gap-1"><Clock size={11}/> {order.eta}m</span>
                     )}
                     {["pending","preparing","dispatched"].includes(order.status) && (
-                      <button onClick={e=>{e.stopPropagation();advanceStatus(order.id)}} style={{ padding:"5px 10px", borderRadius:"8px", border:"none", background:"#1e293b", color:"white", fontSize:"10px", fontWeight:700, cursor:"pointer", display:"flex", alignItems:"center", gap:"4px" }}>
+                      <button 
+                        onClick={e=>{e.stopPropagation();advanceStatus(order.id)}} 
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white text-[10px] font-bold flex items-center gap-1 shadow-sm hover:scale-105 active:scale-95 transition-transform"
+                      >
                         Update <ChevronRight size={11}/>
                       </button>
                     )}
@@ -182,90 +201,93 @@ export function DeliveryDashboard() {
             );
           })}
         </div>
-      </div>
+      </aside>
 
-      {/* ── CENTER MAP ── */}
-      <div style={{ flex:1, position:"relative", padding: "16px" }}>
-        <div style={{ width: "100%", height: "100%", borderRadius: "32px", overflow: "hidden", border: "1px solid #e2e8f0", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.08)" }}>
+      {/* ── MAIN CONTENT ── */}
+      <main className="flex-1 relative p-4 md:p-6 overflow-hidden">
+        <div className="w-full h-full rounded-[24px] md:rounded-[32px] overflow-hidden border border-gray-200 shadow-2xl relative">
             <LeafletMap 
-            restaurantPos={RESTAURANT}
-            customerPos={selected.destLat ? [selected.destLat, selected.destLng!] : RESTAURANT}
-            riderPos={selected.status === "dispatched" ? riderPos : undefined}
-            route={route}
-            height="100%"
+              restaurantPos={RESTAURANT}
+              customerPos={selected.destLat ? [selected.destLat, selected.destLng!] : RESTAURANT}
+              riderPos={selected.status === "dispatched" ? riderPos : undefined}
+              route={route}
+              height="100%"
             />
-        </div>
 
-        {/* Map overlay: selected order info */}
-        <div style={{ position:"absolute", top:"32px", left:"32px", background:"white", borderRadius:"24px", padding:"20px", border:"1px solid #e2e8f0", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.05)", minWidth:"280px", zIndex: 1000 }}>
-          <div style={{ fontSize:"11px", fontWeight:800, color:"#64748b", textTransform:"uppercase", letterSpacing:"0.1em", marginBottom:"12px" }}>Tracking Order</div>
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
-            <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Package size={24} color="#1e293b" />
-            </div>
-            <div>
-                <div style={{ fontSize:"16px", fontWeight:900, color:"#0f172a" }}>{selected.customer}</div>
-                <div style={{ fontSize:"12px", color:"#64748b", display:"flex", alignItems:"center", gap:"4px", marginTop: "2px" }}><MapPin size={11}/> {selected.address}</div>
-            </div>
-          </div>
-          <div style={{ marginTop: "16px", padding: "12px", background: "#f8fafc", borderRadius: "16px", border: "1px solid #f1f5f9" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "#64748b" }}>Status</span>
-                <span style={{ padding:"4px 10px", borderRadius:"20px", background:STATUS_CFG[selected.status].bg, color:STATUS_CFG[selected.status].color, fontSize:"11px", fontWeight:800 }}>
-                {STATUS_CFG[selected.status].label}
-                </span>
-            </div>
-            {selected.eta > 0 && (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "8px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#64748b" }}>Est. Arrival</span>
-                    <span style={{ fontSize:"12px", color:"#f59e0b", fontWeight:800 }}>{selected.eta} mins</span>
+            {/* Map overlay: selected order info */}
+            <div className="absolute top-4 left-4 md:top-8 md:left-8 bg-white/95 backdrop-blur rounded-[20px] md:rounded-[24px] p-4 md:p-5 border border-gray-200 shadow-xl min-w-[240px] md:min-w-[280px] z-[900]">
+              <div className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Tracking Order</div>
+              <div className="flex gap-3 md:gap-4 items-center">
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-16 bg-slate-100 flex items-center justify-center shrink-0">
+                    <Package size={20} md:size={24} className="text-slate-900" />
                 </div>
-            )}
-          </div>
-        </div>
-
-        {/* Rider detail bottom card */}
-        {selected.rider && selected.status === "dispatched" && (
-          <div style={{ position:"absolute", bottom:"48px", left:"50%", transform:"translateX(-50%)", background:"white", borderRadius:"28px", padding:"16px 24px", border:"1px solid #e2e8f0", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.15)", display:"flex", alignItems:"center", gap:"20px", minWidth:"400px", zIndex: 1000 }}>
-            <div style={{ width:"56px", height:"56px", borderRadius:"18px", overflow: "hidden", border: "3px solid #f1f5f9" }}>
-              <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" alt="Rider" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
-            <div style={{ flex:1 }}>
-              <div style={{ fontSize:"15px", fontWeight:900, color:"#0f172a" }}>{selected.rider}</div>
-              <div style={{ display:"flex", alignItems: "center", gap:"8px", marginTop: "2px" }}>
-                <div style={{ display: "flex", gap: "2px" }}>{[1,2,3,4,5].map(i=><Star key={i} size={11} fill="#f59e0b" stroke="none"/>)}</div>
-                <span style={{ fontSize: "11px", color: "#94a3b8", fontWeight: 600 }}>4.9 (240+)</span>
+                <div className="overflow-hidden">
+                    <div className="text-sm md:text-base font-black text-slate-900 truncate">{selected.customer}</div>
+                    <div className="text-[11px] md:text-[12px] text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11}/> {selected.address}</div>
+                </div>
               </div>
-              <div style={{ fontSize:"12px", color:"#64748b", marginTop: "2px", fontWeight: 600 }}>{selected.riderPhone}</div>
+              <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="flex justify-between items-center">
+                    <span className="text-[11px] md:text-[12px] font-bold text-slate-400 uppercase">Status</span>
+                    <span className="px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-black border" style={{ backgroundColor: STATUS_CFG[selected.status].bg, color: STATUS_CFG[selected.status].color, borderColor: STATUS_CFG[selected.status].border }}>
+                      {STATUS_CFG[selected.status].label}
+                    </span>
+                </div>
+                {selected.eta > 0 && (
+                    <div className="flex justify-between items-center mt-2.5">
+                        <span className="text-[11px] md:text-[12px] font-bold text-slate-400 uppercase">Est. Arrival</span>
+                        <span className="text-[11px] md:text-[12px] text-amber-600 font-black">{selected.eta} mins</span>
+                    </div>
+                )}
+              </div>
             </div>
-            <div style={{ textAlign:"right" }}>
-              <div style={{ fontSize:"14px", color:"#f59e0b", fontWeight:900, marginBottom: "8px" }}>{selected.eta} mins left</div>
-              <a href={`tel:${selected.riderPhone}`} style={{ display:"inline-flex", alignItems:"center", gap:"6px", padding:"8px 16px", borderRadius:"12px", background:"#10b981", color:"white", fontSize:"12px", fontWeight:800, textDecoration:"none", boxShadow: "0 10px 15px -3px rgba(16, 185, 129, 0.3)" }}>
-                <Phone size={14}/> Call Rider
-              </a>
-            </div>
-          </div>
-        )}
 
-        {/* Legend */}
-        <div style={{ position:"absolute", bottom:"32px", right:"32px", background:"white", borderRadius:"20px", padding:"16px", border:"1px solid #e2e8f0", boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.05)", zIndex: 1000 }}>
-          <div style={{ fontSize: "10px", fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "12px" }}>Map Legend</div>
-          {[["🍔","Restaurant"],["🛵","Rider"],["📍","Destination"]].map(([icon,label])=>(
-            <div key={label} style={{ display:"flex", alignItems:"center", gap:"10px", marginBottom:"8px" }}>
-              <span style={{ fontSize:"16px" }}>{icon}</span>
-              <span style={{ fontSize:"12px", color:"#64748b", fontWeight:700 }}>{label}</span>
+            {/* Rider detail card */}
+            {selected.rider && selected.status === "dispatched" && (
+              <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 bg-white/95 backdrop-blur rounded-[24px] md:rounded-[28px] p-4 md:p-6 border border-gray-200 shadow-2xl flex flex-col md:flex-row items-center gap-4 md:gap-5 md:min-w-[440px] z-[900]">
+                <div className="flex items-center gap-4 w-full md:w-auto">
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-18 overflow-hidden border-2 border-slate-100 shrink-0">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" alt="Rider" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="text-sm md:text-[15px] font-black text-slate-900 truncate">{selected.rider}</div>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><Star key={i} size={10} className="fill-amber-500 text-transparent"/>)}</div>
+                      <span className="text-[10px] text-slate-400 font-bold">4.9</span>
+                    </div>
+                    <div className="text-[11px] text-slate-500 mt-0.5 font-bold">{selected.riderPhone}</div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between w-full md:w-auto md:flex-col md:items-end md:gap-2 border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-5">
+                  <div className="text-[13px] md:text-sm text-amber-600 font-black">{selected.eta} mins left</div>
+                  <a href={`tel:${selected.riderPhone}`} className="flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-xl bg-emerald-500 text-white text-xs md:text-sm font-black shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-transform">
+                    <Phone size={14}/> Call
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Legend */}
+            <div className="hidden lg:block absolute bottom-8 right-8 bg-white/95 backdrop-blur rounded-[20px] p-5 border border-gray-200 shadow-xl min-w-[160px] z-[900]">
+              <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Map Legend</div>
+              <div className="space-y-2.5">
+                {[["🍔","Restaurant"],["🛵","Rider"],["📍","Destination"]].map(([icon,label])=>(
+                  <div key={label} className="flex items-center gap-3">
+                    <span className="text-base">{icon}</span>
+                    <span className="text-xs text-slate-600 font-bold">{label}</span>
+                  </div>
+                ))}
+                <div className="flex items-center gap-3 pt-1">
+                  <div className="w-5 h-1 bg-indigo-500 rounded-full"/>
+                  <span className="text-xs text-slate-600 font-bold">Live Route</span>
+                </div>
+              </div>
             </div>
-          ))}
-          <div style={{ display:"flex", alignItems:"center", gap:"10px" }}>
-            <div style={{ width:"20px", height:"4px", background:"#6366f1", borderRadius:"2px" }}/>
-            <span style={{ fontSize:"12px", color:"#64748b", fontWeight:700 }}>Live Route</span>
-          </div>
         </div>
-      </div>
+      </main>
 
-      <style>{`
+      <style jsx global>{`
         @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
-        @keyframes ping { 0%{box-shadow:0 0 0 0 rgba(99,102,241,0.4)} 100%{box-shadow:0 0 0 24px rgba(99,102,241,0)} }
       `}</style>
     </div>
   );

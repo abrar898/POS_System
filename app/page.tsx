@@ -35,7 +35,7 @@ const modules = [
   {
     title: "Online Ordering",
     desc: "Customer-facing dynamic menu & cart dashboard.",
-    href: "/online/royal-burger",
+    href: "/home",
     icon: Globe,
     color: "from-indigo-500 to-purple-600",
     shadow: "shadow-indigo-500/25",
@@ -44,7 +44,7 @@ const modules = [
   {
     title: "Live Tracking",
     desc: "Real-time status tracking for customer orders.",
-    href: "/online/orders/123/track",
+    href: "/orders/CHZ-39403/track",
     icon: Activity,
     color: "from-emerald-500 to-teal-600",
     shadow: "shadow-emerald-500/25",
@@ -106,7 +106,7 @@ const modules = [
   }
 ];
 
-export default function HomePage() {
+export default function LandingPage() {
   return (
     <main className="min-h-screen relative overflow-hidden bg-[#050507] text-white flex flex-col items-center justify-start py-12 px-6 sm:px-24 selection:bg-indigo-500/30 font-sans">
       {/* Dynamic Background Elements */}
@@ -194,7 +194,7 @@ export default function HomePage() {
             <Link href="/counter" className="px-8 py-4 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition-all shadow-xl shadow-indigo-500/30 flex items-center gap-2 group">
               Get Started <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
             </Link>
-            <Link href="/online/royal-burger" className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold transition-all backdrop-blur-sm">
+            <Link href="/home" className="px-8 py-4 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 text-white font-bold transition-all backdrop-blur-sm">
               Live Demo
             </Link>
           </motion.div>
