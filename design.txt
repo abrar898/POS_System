@@ -1,0 +1,74 @@
+1.  Color Palette  —  7 Brand Colors
+
+Swatch	Hex	Name	Where It Is Used
+ 	#FDEFDE	Cream	Page / section background; hero area fill; alternating row tint
+ 	#FEFDFA	Off-White	Card background; modal surface; input field fill; cart panel; navbar bg
+ 	#FECE04	Brand Yellow	Primary CTA buttons; header accent bar; active nav indicator; badges; star rating; promo tags
+ 	#737373	Mid Gray	Secondary body text; placeholder text; disabled states; icon strokes; dividers; input borders
+ 	#000000	Pure Black	All headings (H1–H3); logo text; primary body copy; cart item names; price text
+ 	#7ED957	Success Green	Order success banner; delivery step "completed" icon; availability badge; tracking progress fill
+ 	#811920	Deep Maroon	Footer/navbar accent; table headers; crossed-out original price; error messages; "Deals" ribbon
+2.  Component Color Specifications
+
+Component	Default State	Hover / Active State	Implementation Notes
+Primary CTA Button	BG: #FECE04 · Text: #000000	BG: darken 8% (#E5B800) · shadow	8px radius, 48px height, bold 14px uppercase, full-width on mobile
+Navigation Bar	BG: #FEFDFA · Links: #000000	Active link: #FECE04 underline	Sticky 64px bar; logo left; icons right; 1px bottom border #737373
+Category Sidebar	BG: #FEFDFA · Text: #000000	Row hover: #FDEFDE bg	220px wide; 1px right border #737373; icon + label rows
+Product Card	BG: #FEFDFA · Title: #000000	Border: 2px #FECE04 on hover	12px radius; drop-shadow; image top; name + price; Add button
+"Popular" / Promo Badge	BG: #FECE04 · Text: #000000	N/A	4px radius, 11px bold caps, absolute top-left corner of card
+Cart / Order Panel	BG: #FEFDFA · Dividers: #737373 10%	N/A	Right sidebar 320px; sticky; item list with quantity controls
+Checkout Button	BG: #FECE04 · Text: #000000	BG darken on hover	Full-width inside cart, 48px height, 16px bold
+Price – Current	Color: #000000	N/A	16px semi-bold
+Price – Strikethrough	Color: #811920 · line-through	N/A	13px regular; original price crossed out
+Input / Address Field	BG: #FEFDFA · Border: #737373	Border: #FECE04 on focus	8px radius, 44px height, placeholder color #737373
+Payment Option Row	BG: #FEFDFA · Border: #737373	BG: #FDEFDE when selected	Full-width rows, radio left, icon right
+Step Indicator	Inactive: #737373 · Active: #FECE04	Completed: #7ED957	28px circles connected by 2px line
+Order Success Banner	BG: #FDEFDE · Icon: #7ED957	N/A	Center-aligned, illustration + order # + ETA text
+Tracking Progress Bar	Track: #737373 20% · Fill: #7ED957	Animated fill on step change	4px bar, dot markers per stage
+Footer / Brand Bar	BG: #811920 · Text: #FEFDFA	Link hover: #FECE04	80px height, logo centred
+3.  Typography Scale
+Role	Font	Size / Weight	Color	Usage Context
+H1 – Page / Modal Title	DM Sans Bold	28px / 700	#000000	Hero headings, modal titles, section openers
+H2 – Section Label	DM Sans SemiBold	22px / 600	#000000	"Popular", "Deals & Offers", checkout stage labels
+H3 – Card / Item Name	DM Sans SemiBold	16px / 600	#000000	Product card names, cart item names
+Body – Description	DM Sans Regular	13px / 400	#737373	Product descriptions, form helper text, addresses
+Body – Small / Meta	DM Sans Regular	11px / 400	#737373	Timestamps, sub-labels, rating counts
+Button Label	DM Sans Bold	14px / 700	#000000	CTAs, Checkout, Place Order, Add to Cart
+Price – Current	DM Sans SemiBold	16px / 600	#000000	Active price in cards and cart
+Price – Original (struck)	DM Sans Regular	13px / 400	#811920	Crossed-out original price next to discount
+Badge / Tag	DM Sans Bold	11px / 700	#000000	"Popular", "New", promo tags on #FECE04 bg
+Nav Links	DM Sans Medium	14px / 500	#000000	Header and footer navigation items
+Success / Confirmation	DM Sans Bold	20px / 700	#7ED957	Order success heading, confirmation messages
+Error / Alert	DM Sans Regular	13px / 400	#811920	Inline error messages, validation warnings
+4.  Spacing & Border-Radius
+Token	Value	Typical Usage
+xs	4px	Icon-to-label gaps, badge inner padding
+sm	8px	Button vertical padding, tag padding, chip gaps
+md	12px	Card internal padding, input vertical padding, list row padding
+lg	16px	Section row padding, cart item vertical gap
+xl	24px	Card margin, modal inner padding, sidebar section gap
+2xl	40px	Page section gap, hero vertical padding
+5.  CSS Custom Properties
+:root {
+  /* ── Brand Palette ─────────────────────── */
+  --color-cream:       #FDEFDE;  /* Page / section background          */
+  --color-surface:     #FEFDFA;  /* Cards, modals, inputs, navbar      */
+  --color-primary:     #FECE04;  /* Buttons, badges, active indicators */
+  --color-gray:        #737373;  /* Secondary text, borders, disabled  */
+  --color-text:        #000000;  /* Headings, body copy, prices        */
+  --color-success:     #7ED957;  /* Order success, delivery complete   */
+  --color-maroon:      #811920;  /* Footer, errors, strikethrough      */
+ 
+  /* ── Semantic Aliases ────────────────────── */
+  --bg-page:           var(--color-cream);
+  --bg-card:           var(--color-surface);
+  --btn-primary-bg:    var(--color-primary);
+  --btn-primary-text:  var(--color-text);
+  --text-body:         var(--color-text);
+  --text-secondary:    var(--color-gray);
+  --text-error:        var(--color-maroon);
+  --text-success:      var(--color-success);
+  --border-default:    var(--color-gray);
+  --border-focus:      var(--color-primary);
+}
+

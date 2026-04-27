@@ -6,7 +6,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { getRoute } from "@/lib/routing";
 
-const LeafletMap = dynamic(() => import("@/components/leaflet-map"), { 
+const GoogleMapComponent = dynamic(() => import("@/components/google-map"), { 
   ssr: false,
   loading: () => <div className="h-full w-full bg-slate-50 animate-pulse" />
 });
@@ -104,7 +104,7 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
           
           {/* Map Area */}
           <div className="flex-1 relative z-0 min-h-[400px]">
-            <LeafletMap 
+            <GoogleMapComponent 
               restaurantPos={[33.6844, 73.0479]}
               customerPos={[33.6950, 73.0600]}
               riderPos={riderPos}
