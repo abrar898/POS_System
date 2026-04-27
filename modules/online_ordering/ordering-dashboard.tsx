@@ -234,49 +234,75 @@ export function OnlineOrderingDashboard({
           {initialScreen === "menu" && (
             <>
               {/* Hero Section */}
-              <section className="m-4 md:m-6 rounded-3xl bg-[#FDEFDE] p-6 md:p-10 flex flex-col md:flex-row relative overflow-hidden min-h-[320px] md:h-[320px]">
-                <div className="flex-1 z-10">
-                  <h1 className="text-4xl md:text-6xl font-black md:leading-tight mb-4">
+              <section className="m-4 md:m-8 rounded-[32px] md:rounded-[48px] bg-[#FDEFDE] p-6 md:p-16 flex flex-col md:flex-row items-center relative overflow-hidden min-h-[400px] md:h-[450px]">
+                {/* Text Content */}
+                <div className="w-full md:w-3/5 z-10 flex flex-col items-start text-left">
+                  <h1 className="text-4xl md:text-7xl font-black md:leading-[1.1] mb-4 text-gray-900">
                     Order Your<br />
                     Favorites in <span style={{ color: COLORS.deepMaroon }}>Seconds.</span>
                   </h1>
-                  <p className="text-gray-600 font-medium mb-6 md:mb-8 text-sm md:text-base">Fresh. Hot. Delivered fast to your door.</p>
+                  <p className="text-gray-700 font-bold mb-8 md:mb-10 text-sm md:text-lg">Fresh. Hot. Delivered fast to your door.</p>
                   
-                  <div className="flex flex-col sm:flex-row flex-wrap gap-4 items-start sm:items-center">
-                    <div className="bg-white rounded-full p-1 flex shadow-sm border border-gray-100 w-full sm:w-auto">
+                  <div className="flex flex-col gap-4 w-full sm:w-auto">
+                    {/* Row 1: Toggle Buttons */}
+                    <div className="bg-white/80 backdrop-blur-sm rounded-full p-1.5 flex shadow-sm border border-white/50 w-full sm:w-fit">
                       <button 
                         onClick={() => setOrderType("delivery")}
-                        className={`flex-1 sm:px-6 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${orderType === "delivery" ? "bg-[#FECE04] text-black shadow-md" : "text-gray-500"}`}
+                        className={`flex-1 sm:px-8 py-3 rounded-full text-xs md:text-sm font-black transition-all flex items-center justify-center gap-2 ${orderType === "delivery" ? "bg-[#FECE04] text-black shadow-lg" : "text-gray-500 hover:text-gray-900"}`}
                       >
-                        <Truck size={16} /> Delivery
+                        <Truck size={18} /> Delivery
                       </button>
                       <button 
                         onClick={() => setOrderType("pickup")}
-                        className={`flex-1 sm:px-6 py-2.5 rounded-full text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 ${orderType === "pickup" ? "bg-[#FECE04] text-black shadow-md" : "text-gray-500"}`}
+                        className={`flex-1 sm:px-8 py-3 rounded-full text-xs md:text-sm font-black transition-all flex items-center justify-center gap-2 ${orderType === "pickup" ? "bg-[#FECE04] text-black shadow-lg" : "text-gray-500 hover:text-gray-900"}`}
                       >
-                        <Package size={16} /> Pickup
+                        <Package size={18} /> Pickup
                       </button>
                     </div>
                     
-                    <div className="bg-white rounded-2xl px-4 py-2.5 flex items-center gap-3 border border-gray-100 shadow-sm w-full sm:min-w-[280px]">
-                      <MapPin size={18} className="text-[#811920]" />
-                      <span className="text-xs md:text-sm font-bold text-gray-700 flex-1 truncate">Emaar DHA 5, Islamabad</span>
-                      <ChevronDown size={16} className="text-gray-400" />
+                    {/* Row 2: Location and Time */}
+                    <div className="flex flex-col sm:flex-row gap-3 w-full">
+                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-5 py-3 flex items-center gap-3 border border-white/50 shadow-sm flex-1 max-w-full sm:max-w-[320px]">
+                        <MapPin size={20} className="text-[#811920]" />
+                        <span className="text-xs md:text-sm font-black text-gray-800 flex-1 truncate">Emaar DHA 5, Islamabad</span>
+                        <ChevronDown size={18} className="text-gray-400" />
+                      </div>
+                      <div className="bg-white/80 backdrop-blur-sm rounded-2xl px-5 py-3 flex items-center gap-3 border border-white/50 shadow-sm w-fit">
+                        <Clock size={20} className="text-gray-400" />
+                        <div className="flex flex-col">
+                          <span className="text-[10px] md:text-[11px] font-black text-gray-900 leading-tight">20-30 min</span>
+                          <span className="text-[8px] md:text-[9px] font-bold text-gray-500 uppercase tracking-wider">Delivery Time</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
                 
-                <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-1/2 items-center justify-end pr-10">
-                   <div className="relative w-full h-full">
-                      <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?w=800&h=600&fit=crop" alt="Cheezious Special" className="w-[450px] h-full object-cover rounded-l-full shadow-2xl border-8 border-white/20" />
-                      <div className="absolute -left-12 top-10 bg-white p-4 rounded-3xl shadow-xl border border-gray-50 max-w-[150px] transform -rotate-12">
-                        <img src="https://images.unsplash.com/photo-1562967914-608f82629710?w=200&h=200&fit=crop" className="rounded-2xl mb-2" />
-                        <p className="text-[10px] font-black italic text-center text-[#FECE04]">Cheesy Goodness</p>
+                {/* Hero Image - Visible on both, optimized for layout */}
+                <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-[45%] items-center justify-end">
+                   <div className="relative w-full h-full flex items-center justify-center">
+                      <img 
+                        src="file:///C:/Users/LEVI/.gemini/antigravity/brain/2fc36eb6-e1ac-41d6-83e5-342944121651/cheezious_banner_food_1777309366523.png" 
+                        alt="Cheezious Special" 
+                        className="w-[120%] max-w-none h-auto object-contain transform translate-x-10 scale-110 drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)]" 
+                      />
+                      
+                      {/* Floating Badges like in the image */}
+                      <div className="absolute top-[20%] left-0 bg-white p-4 rounded-3xl shadow-2xl border border-gray-50 max-w-[140px] transform -rotate-12 animate-bounce-slow">
+                        <p className="text-[14px] md:text-[16px] font-black italic text-[#FECE04] leading-tight" style={{ fontFamily: "'Playball', cursive" }}>Cheesy<br/>Goodness</p>
                       </div>
-                      <div className="absolute left-10 bottom-10 bg-[#FECE04] p-3 rounded-full shadow-lg transform rotate-12">
-                        <p className="text-[10px] font-black uppercase text-center leading-tight">FRIES<br/>ALWAYS A<br/>GOOD IDEA</p>
+                      <div className="absolute right-10 bottom-[15%] bg-[#FECE04] p-5 rounded-full shadow-2xl transform rotate-12 flex flex-col items-center justify-center border-4 border-white">
+                        <p className="text-[10px] md:text-[12px] font-black uppercase text-center leading-tight text-black">FRIES<br/>ALWAYS A<br/>GOOD IDEA</p>
                       </div>
                    </div>
+                </div>
+
+                {/* Mobile Image (smaller and absolute) */}
+                <div className="md:hidden absolute -bottom-10 -right-10 w-48 h-48 opacity-40 pointer-events-none">
+                   <img 
+                      src="file:///C:/Users/LEVI/.gemini/antigravity/brain/2fc36eb6-e1ac-41d6-83e5-342944121651/cheezious_banner_food_1777309366523.png" 
+                      className="w-full h-full object-contain"
+                   />
                 </div>
               </section>
 
