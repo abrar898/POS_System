@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   Search, Bell, Plus, Minus, Star, User, X, ChevronDown,
   MapPin, Clock, Truck, Package, Trash2, Filter, ShoppingBag, Ticket, ChevronRight,
@@ -142,7 +142,7 @@ export function OnlineOrderingDashboard({
   initialCheckoutStep?: CheckoutStep 
 }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+
   const { cart, addToCart, removeFromCart, deleteFromCart, clearCart, grandTotal, cartTotal, deliveryCharges } = useCart();
   
   const [activeCategory, setActiveCategory] = useState("popular");
