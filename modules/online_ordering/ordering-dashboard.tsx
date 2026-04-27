@@ -282,7 +282,7 @@ export function OnlineOrderingDashboard({
                 <div className="hidden md:flex absolute right-0 top-0 bottom-0 w-[45%] items-center justify-end">
                    <div className="relative w-full h-full flex items-center justify-center">
                       <img 
-                        src="file:///C:/Users/LEVI/.gemini/antigravity/brain/2fc36eb6-e1ac-41d6-83e5-342944121651/cheezious_banner_food_1777309366523.png" 
+                        src="/banner-food.png" 
                         alt="Cheezious Special" 
                         className="w-[120%] max-w-none h-auto object-contain transform translate-x-10 scale-110 drop-shadow-[0_20px_50px_rgba(0,0,0,0.15)]" 
                       />
@@ -300,7 +300,7 @@ export function OnlineOrderingDashboard({
                 {/* Mobile Image (smaller and absolute) */}
                 <div className="md:hidden absolute -bottom-10 -right-10 w-48 h-48 opacity-40 pointer-events-none">
                    <img 
-                      src="file:///C:/Users/LEVI/.gemini/antigravity/brain/2fc36eb6-e1ac-41d6-83e5-342944121651/cheezious_banner_food_1777309366523.png" 
+                      src="/banner-food.png" 
                       className="w-full h-full object-contain"
                    />
                 </div>
