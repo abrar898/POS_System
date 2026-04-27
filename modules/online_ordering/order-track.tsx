@@ -84,7 +84,7 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
         {/* Sub Header / Back Button */}
         <div className="mb-6 md:mb-10">
           <Link href="/home" className="flex items-center gap-2 text-gray-400 hover:text-gray-900 font-bold transition-colors text-sm md:text-base">
-            <ChevronLeft size={20} md:size={22} /> <span>Back to Menu</span>
+            <ChevronLeft className="w-5 h-5 md:w-[22px] md:h-[22px]" /> <span>Back to Menu</span>
           </Link>
         </div>
 
@@ -114,28 +114,28 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
               {/* Step 1: Placed */}
               <div className="flex flex-col items-center group relative">
                  <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-[#7ED957] flex items-center justify-center text-white shadow-lg border-2 md:border-4 border-white">
-                    <CheckCircle2 size={20} md:size={28} />
+                    <CheckCircle2 className="w-5 h-5 md:w-7 md:h-7" />
                  </div>
                  <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">Placed</span>
               </div>
               {/* Step 2: Preparing */}
               <div className="flex flex-col items-center group relative">
                  <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${["preparing", "delivery", "delivered"].includes(status) ? "bg-[#FECE04] text-black" : "bg-gray-100 text-gray-400"}`}>
-                    <ChefHat size={20} md:size={28} />
+                    <ChefHat className="w-5 h-5 md:w-7 md:h-7" />
                  </div>
                  <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">Preparing</span>
               </div>
               {/* Step 3: Delivery */}
               <div className="flex flex-col items-center group relative">
                  <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${["delivery", "delivered"].includes(status) ? "bg-[#FECE04] text-black" : "bg-gray-400 text-white"}`}>
-                    <Bike size={20} md:size={28} />
+                    <Bike className="w-5 h-5 md:w-7 md:h-7" />
                  </div>
                  <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">On the way</span>
               </div>
               {/* Step 4: Delivered */}
               <div className="flex flex-col items-center group relative">
                  <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${status === "delivered" ? "bg-[#7ED957] text-white" : "bg-gray-400 text-white"}`}>
-                    <Package size={20} md:size={28} />
+                    <Package className="w-5 h-5 md:w-7 md:h-7" />
                  </div>
                  <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">Delivered</span>
               </div>
@@ -161,7 +161,7 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
               </div>
               <div className="flex justify-end mt-4 md:mt-0">
                 <button className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl bg-gray-50 flex items-center justify-center text-gray-900 hover:bg-gray-100 transition-all shadow-sm">
-                   <Phone size={20} md:size={24} className="fill-current" />
+                   <Phone className="w-5 h-5 md:w-6 md:h-6 fill-current" />
                 </button>
               </div>
            </div>

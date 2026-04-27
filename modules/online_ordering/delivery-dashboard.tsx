@@ -219,7 +219,7 @@ export function DeliveryDashboard() {
               <div className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Tracking Order</div>
               <div className="flex gap-3 md:gap-4 items-center">
                 <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-16 bg-slate-100 flex items-center justify-center shrink-0">
-                    <Package size={20} md:size={24} className="text-slate-900" />
+                    <Package className="w-5 h-5 md:w-6 md:h-6 text-slate-900" />
                 </div>
                 <div className="overflow-hidden">
                     <div className="text-sm md:text-base font-black text-slate-900 truncate">{selected.customer}</div>
