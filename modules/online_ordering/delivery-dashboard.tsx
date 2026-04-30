@@ -4,7 +4,7 @@ import dynamic from "next/dynamic";
 import { Truck, Clock, CheckCircle2, MapPin, Phone, Search, X, Package, Bike, TrendingUp, AlertCircle, Eye, ChevronRight, Star, Navigation, RefreshCw, Menu } from "lucide-react";
 import { getRoute } from "@/lib/routing";
 
-const LeafletMap = dynamic(() => import("@/components/leaflet-map"), { ssr: false });
+const GoogleMap = dynamic(() => import("@/components/google-map"), { ssr: false });
 
 // Islamabad coords
 const RESTAURANT: [number, number] = [33.6844, 73.0479];
@@ -119,7 +119,7 @@ export function DeliveryDashboard() {
               <h1 className="text-base font-black text-slate-900 leading-tight">Delivery Control</h1>
               <div className="flex items-center gap-1.5 mt-0.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"/>
-                <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">OSM LIVE</span>
+                <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">LIVE TRACKING</span>
               </div>
             </div>
           </div>
@@ -206,7 +206,7 @@ export function DeliveryDashboard() {
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 relative p-4 md:p-6 overflow-hidden">
         <div className="w-full h-full rounded-[24px] md:rounded-[32px] overflow-hidden border border-gray-200 shadow-2xl relative">
-            <LeafletMap 
+            <GoogleMap 
               restaurantPos={RESTAURANT}
               customerPos={selected.destLat ? [selected.destLat, selected.destLng!] : RESTAURANT}
               riderPos={selected.status === "dispatched" ? riderPos : undefined}
