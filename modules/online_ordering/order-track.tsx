@@ -167,18 +167,14 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
            </div>
 
            {/* Map Card */}
-           <div className="bg-white rounded-[24px] md:rounded-[32px] overflow-hidden border border-gray-100 shadow-xl shadow-gray-100/50 min-h-[220px]">
-              <div className="w-full h-full bg-blue-50 relative min-h-[200px]">
-                 <img 
-                   src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600&h=400&fit=crop" 
-                   alt="Location Map" 
-                   className="w-full h-full object-cover opacity-60"
-                 />
-                 {/* Mock route line */}
-                 <div className="absolute top-1/2 left-1/4 right-1/4 h-1 md:h-1.5 bg-[#FECE04] rounded-full transform -rotate-12 blur-[1px]" />
-                 <div className="absolute top-[45%] left-1/4 w-3 h-3 md:w-4 md:h-4 bg-white border-2 md:border-4 border-[#811920] rounded-full shadow-lg" />
-                 <div className="absolute top-[55%] right-1/4 w-3 h-3 md:w-4 md:h-4 bg-white border-2 md:border-4 border-[#7ED957] rounded-full shadow-lg" />
-              </div>
+           <div className="bg-white rounded-[24px] md:rounded-[32px] overflow-hidden border border-gray-100 shadow-xl shadow-gray-100/50 h-[300px] md:h-[400px]">
+              <GoogleMapComponent 
+                restaurantPos={[33.6844, 73.0479]} 
+                customerPos={[33.6950, 73.0600]}
+                riderPos={status === "delivery" ? [33.6900, 73.0520] : undefined}
+                height="100%"
+                zoom={14}
+              />
            </div>
         </div>
 
