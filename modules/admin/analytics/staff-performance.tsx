@@ -37,9 +37,9 @@ export function StaffPerformanceView() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">Staff performance</h1>
-          <p className="mt-1 text-sm font-medium text-[#a0a8b2]">
-            <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">GET /api/analytics/staff-performance</code> — per-waiter
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Staff performance</h1>
+          <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+            <code className="font-mono text-[11px] font-bold text-foreground">GET /api/analytics/staff-performance</code> — per-waiter
             leaderboard.
           </p>
         </div>
@@ -50,7 +50,7 @@ export function StaffPerformanceView() {
               type="button"
               onClick={() => setPeriod(p)}
               className={`rounded-xl px-4 py-2 text-xs font-black capitalize ${
-                period === p ? "bg-[#1a1a2e] text-white shadow-md" : "border border-[#EBEBF0] bg-white"
+                period === p ? "bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-white shadow-md" : "border border-[var(--border-default)] bg-[var(--bg-card)]"
               }`}
             >
               {p}
@@ -59,9 +59,9 @@ export function StaffPerformanceView() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-[#EBEBF0] bg-white card-shadow">
+      <div className="overflow-hidden rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] card-shadow">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[#FAFAFC] text-[11px] font-black uppercase tracking-wider text-[#a0a8b2]">
+          <thead className="bg-[#FAFAFC] text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
             <tr>
               <th className="px-5 py-3">Waiter</th>
               <th className="px-5 py-3">
@@ -94,7 +94,7 @@ export function StaffPerformanceView() {
           <tbody className="divide-y divide-[#F0F1F5]">
             {sorted.map((s) => (
               <tr key={s.name} className="hover:bg-[#FAFAFC]">
-                <td className="px-5 py-3 font-bold text-[#1a1a2e]">{s.name}</td>
+                <td className="px-5 py-3 font-bold text-foreground">{s.name}</td>
                 <td className="px-5 py-3 font-black tabular-nums">{s.orders}</td>
                 <td className="px-5 py-3 font-black tabular-nums">Rs. {s.avgTicket.toLocaleString()}</td>
                 <td className="px-5 py-3 font-black tabular-nums">Rs. {s.tips.toLocaleString()}</td>

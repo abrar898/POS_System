@@ -23,40 +23,40 @@ export function RevenueDashboardView() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">Revenue dashboard</h1>
-        <p className="mt-1 text-sm font-medium text-[#a0a8b2]">
-          <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">GET /api/analytics/dashboard/:branchId</code> ·{" "}
+        <h1 className="text-2xl font-black tracking-tight text-foreground">Revenue dashboard</h1>
+        <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+          <code className="font-mono text-[11px] font-bold text-foreground">GET /api/analytics/dashboard/:branchId</code> ·{" "}
           {ADMIN_BRANCH.name}
         </p>
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-6 card-shadow">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#a0a8b2]">Today</p>
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-6 card-shadow">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Today</p>
           <p className="mt-1 text-2xl font-black tabular-nums">Rs. {k.today.value.toLocaleString()}</p>
           <div className="mt-2 flex items-center justify-between">
             <Delta pct={k.today.changePct} />
-            <span className="text-[11px] text-[#a0a8b2]">
+            <span className="text-[11px] text-[var(--text-secondary)]">
               PY Rs. {k.today.priorYear.toLocaleString()}
             </span>
           </div>
         </div>
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-6 card-shadow">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#a0a8b2]">This week</p>
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-6 card-shadow">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">This week</p>
           <p className="mt-1 text-2xl font-black tabular-nums">Rs. {k.week.value.toLocaleString()}</p>
           <div className="mt-2 flex items-center justify-between">
             <Delta pct={k.week.changePct} />
-            <span className="text-[11px] text-[#a0a8b2]">
+            <span className="text-[11px] text-[var(--text-secondary)]">
               PY Rs. {k.week.priorYear.toLocaleString()}
             </span>
           </div>
         </div>
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-6 card-shadow">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#a0a8b2]">This month</p>
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-6 card-shadow">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">This month</p>
           <p className="mt-1 text-2xl font-black tabular-nums">Rs. {k.month.value.toLocaleString()}</p>
           <div className="mt-2 flex items-center justify-between">
             <Delta pct={k.month.changePct} />
-            <span className="text-[11px] text-[#a0a8b2]">
+            <span className="text-[11px] text-[var(--text-secondary)]">
               PY Rs. {k.month.priorYear.toLocaleString()}
             </span>
           </div>
@@ -64,21 +64,21 @@ export function RevenueDashboardView() {
       </div>
 
       <div className="mb-6 grid gap-4 md:grid-cols-2">
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-6 card-shadow">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#a0a8b2]">Avg order value</p>
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-6 card-shadow">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">Avg order value</p>
           <p className="mt-1 text-xl font-black tabular-nums">Rs. {k.avgOrderValue.toLocaleString()}</p>
         </div>
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-6 card-shadow">
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#a0a8b2] flex items-center gap-2">
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-6 card-shadow">
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[var(--text-secondary)] flex items-center gap-2">
             <Users size={14} /> Total covers (guests)
           </p>
           <p className="mt-1 text-xl font-black tabular-nums">{k.covers.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="rounded-[28px] border border-[#EBEBF0] bg-white p-6 card-shadow">
-        <h2 className="text-[15px] font-black text-[#1a1a2e]">Revenue by order type</h2>
-        <p className="text-xs font-medium text-[#a0a8b2]">Dine-in · delivery · takeaway · online (aggregators)</p>
+      <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-6 card-shadow">
+        <h2 className="text-[15px] font-black text-foreground">Revenue by order type</h2>
+        <p className="text-xs font-medium text-[var(--text-secondary)]">Dine-in · delivery · takeaway · online (aggregators)</p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {k.byOrderType.map((row) => (
             <div
@@ -88,7 +88,7 @@ export function RevenueDashboardView() {
               <span className="text-sm font-bold">{row.label}</span>
               <div className="text-right">
                 <p className="text-sm font-black tabular-nums">Rs. {row.revenue.toLocaleString()}</p>
-                <p className="text-[11px] font-bold text-[#a0a8b2]">{row.pct}% mix</p>
+                <p className="text-[11px] font-bold text-[var(--text-secondary)]">{row.pct}% mix</p>
               </div>
             </div>
           ))}

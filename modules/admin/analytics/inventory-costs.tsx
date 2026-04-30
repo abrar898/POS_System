@@ -24,20 +24,20 @@ export function InventoryCostsView() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">Inventory cost report</h1>
-        <p className="mt-1 text-sm font-medium text-[#a0a8b2]">
-          <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">GET /api/analytics/inventory-costs</code> — COGS vs revenue,
+        <h1 className="text-2xl font-black tracking-tight text-foreground">Inventory cost report</h1>
+        <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+          <code className="font-mono text-[11px] font-bold text-foreground">GET /api/analytics/inventory-costs</code> — COGS vs revenue,
           recipe vs stocktake variance.
         </p>
       </div>
 
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-5 card-shadow">
-          <p className="text-[11px] font-bold uppercase text-[#a0a8b2]">Revenue (period)</p>
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-5 card-shadow">
+          <p className="text-[11px] font-bold uppercase text-[var(--text-secondary)]">Revenue (period)</p>
           <p className="mt-1 text-xl font-black">Rs. {INVENTORY_MARGIN.revenue.toLocaleString()}</p>
         </div>
-        <div className="rounded-[28px] border border-[#f0f1f5] bg-white p-5 card-shadow">
-          <p className="text-[11px] font-bold uppercase text-[#a0a8b2]">COGS</p>
+        <div className="rounded-[28px] border border-[#f0f1f5] bg-[var(--bg-card)] p-5 card-shadow">
+          <p className="text-[11px] font-bold uppercase text-[var(--text-secondary)]">COGS</p>
           <p className="mt-1 text-xl font-black">Rs. {INVENTORY_MARGIN.cogs.toLocaleString()}</p>
         </div>
         <div className="rounded-[28px] border border-[#f0f1f5] bg-emerald-50 p-5 card-shadow">
@@ -46,7 +46,7 @@ export function InventoryCostsView() {
         </div>
       </div>
 
-      <div className="mb-6 rounded-[28px] border border-[#EBEBF0] bg-white p-6 card-shadow">
+      <div className="mb-6 rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-6 card-shadow">
         <h2 className="mb-4 text-[15px] font-black">COGS vs revenue (Rs. thousands)</h2>
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -63,9 +63,9 @@ export function InventoryCostsView() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-[#EBEBF0] bg-white card-shadow">
+      <div className="overflow-hidden rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] card-shadow">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[#FAFAFC] text-[11px] font-black uppercase tracking-wider text-[#a0a8b2]">
+          <thead className="bg-[#FAFAFC] text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
             <tr>
               <th className="px-5 py-3">Item</th>
               <th className="px-5 py-3 text-right">Margin rank</th>

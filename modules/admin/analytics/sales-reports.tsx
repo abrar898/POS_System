@@ -31,9 +31,9 @@ export function SalesReportsView() {
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6 flex flex-col justify-between gap-4 lg:flex-row lg:items-end">
         <div>
-          <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">Sales reports</h1>
-          <p className="mt-1 text-sm font-medium text-[#a0a8b2]">
-            <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">GET /api/analytics/sales</code> — drill-down
+          <h1 className="text-2xl font-black tracking-tight text-foreground">Sales reports</h1>
+          <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+            <code className="font-mono text-[11px] font-bold text-foreground">GET /api/analytics/sales</code> — drill-down
             by period, channel, payment, waiter, table, time band.
           </p>
         </div>
@@ -41,14 +41,14 @@ export function SalesReportsView() {
           <button
             type="button"
             onClick={() => mockExport("csv")}
-            className="inline-flex items-center gap-2 rounded-xl border border-[#EBEBF0] bg-white px-4 py-2 text-xs font-black shadow-sm"
+            className="inline-flex items-center gap-2 rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-4 py-2 text-xs font-black shadow-sm"
           >
             <Download size={14} /> Export CSV
           </button>
           <button
             type="button"
             onClick={() => mockExport("pdf")}
-            className="inline-flex items-center gap-2 rounded-xl bg-[#1a1a2e] px-4 py-2 text-xs font-black text-white shadow-lg"
+            className="inline-flex items-center gap-2 rounded-xl bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] px-4 py-2 text-xs font-black text-white shadow-lg"
           >
             <FileText size={14} /> Export PDF
           </button>
@@ -62,7 +62,7 @@ export function SalesReportsView() {
             type="button"
             onClick={() => setRange(r)}
             className={`rounded-xl px-4 py-2 text-xs font-black capitalize ${
-              range === r ? "bg-[#1a1a2e] text-white shadow-md" : "bg-white text-[#8a919e] border border-[#EBEBF0]"
+              range === r ? "bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] text-white shadow-md" : "bg-[var(--bg-card)] text-[var(--text-secondary)] border border-[var(--border-default)]"
             }`}
           >
             {r === "custom" ? "Custom range" : r}
@@ -71,7 +71,7 @@ export function SalesReportsView() {
         <select
           value={orderType}
           onChange={(e) => setOrderType(e.target.value)}
-          className="rounded-xl border border-[#EBEBF0] bg-white px-3 py-2 text-xs font-bold"
+          className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-2 text-xs font-bold"
         >
           <option value="all">All order types</option>
           <option value="dine_in">Dine-in</option>
@@ -81,7 +81,7 @@ export function SalesReportsView() {
         <select
           value={waiter}
           onChange={(e) => setWaiter(e.target.value)}
-          className="rounded-xl border border-[#EBEBF0] bg-white px-3 py-2 text-xs font-bold"
+          className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-2 text-xs font-bold"
         >
           <option value="all">All waiters</option>
           <option value="Ahmed">Ahmed</option>
@@ -90,8 +90,8 @@ export function SalesReportsView() {
         </select>
       </div>
 
-      <div className="mb-6 rounded-[28px] border border-[#EBEBF0] bg-white p-6 card-shadow">
-        <h2 className="mb-4 text-[15px] font-black text-[#1a1a2e]">Revenue (Rs. thousands)</h2>
+      <div className="mb-6 rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-6 card-shadow">
+        <h2 className="mb-4 text-[15px] font-black text-foreground">Revenue (Rs. thousands)</h2>
         <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>
@@ -108,9 +108,9 @@ export function SalesReportsView() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-[28px] border border-[#EBEBF0] bg-white card-shadow">
+      <div className="overflow-hidden rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] card-shadow">
         <table className="w-full text-left text-sm">
-          <thead className="bg-[#FAFAFC] text-[11px] font-black uppercase tracking-wider text-[#a0a8b2]">
+          <thead className="bg-[#FAFAFC] text-[11px] font-black uppercase tracking-wider text-[var(--text-secondary)]">
             <tr>
               <th className="px-5 py-3">Date</th>
               <th className="px-5 py-3">Orders</th>

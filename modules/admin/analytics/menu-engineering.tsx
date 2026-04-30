@@ -25,9 +25,9 @@ export function MenuEngineeringView() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">Menu engineering matrix</h1>
-        <p className="mt-1 max-w-3xl text-sm font-medium text-[#a0a8b2]">
-          <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">GET /api/analytics/menu-engineering</code> — X = popularity
+        <h1 className="text-2xl font-black tracking-tight text-foreground">Menu engineering matrix</h1>
+        <p className="mt-1 max-w-3xl text-sm font-medium text-[var(--text-secondary)]">
+          <code className="font-mono text-[11px] font-bold text-foreground">GET /api/analytics/menu-engineering</code> — X = popularity
           (orders), Y = margin %. Quadrants: Stars, Plowhorses, Puzzles, Dogs.
         </p>
       </div>
@@ -41,7 +41,7 @@ export function MenuEngineeringView() {
         ))}
       </div>
 
-      <div className="rounded-[28px] border border-[#EBEBF0] bg-white p-4 card-shadow">
+      <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-4 card-shadow">
         <div className="h-[420px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 16, right: 16, bottom: 16, left: 8 }}>
@@ -71,11 +71,11 @@ export function MenuEngineeringView() {
                 cursor={{ strokeDasharray: "3 3" }}
                 content={({ active, payload }) =>
                   active && payload && payload[0] ? (
-                    <div className="rounded-xl border border-[#EBEBF0] bg-white px-3 py-2 text-xs shadow-lg">
-                      <p className="font-black text-[#1a1a2e]">
+                    <div className="rounded-xl border border-[var(--border-default)] bg-[var(--bg-card)] px-3 py-2 text-xs shadow-lg">
+                      <p className="font-black text-foreground">
                         {(payload[0].payload as { name: string }).name}
                       </p>
-                      <p className="text-[#a0a8b2]">
+                      <p className="text-[var(--text-secondary)]">
                         Pop. {(payload[0].payload as { popularity: number }).popularity}% · Margin{" "}
                         {(payload[0].payload as { marginPct: number }).marginPct}%
                       </p>
@@ -91,7 +91,7 @@ export function MenuEngineeringView() {
             </ScatterChart>
           </ResponsiveContainer>
         </div>
-        <p className="px-2 pb-2 text-center text-[11px] font-semibold text-[#a0a8b2]">
+        <p className="px-2 pb-2 text-center text-[11px] font-semibold text-[var(--text-secondary)]">
           Promote Stars · fix Plowhorses · market Puzzles · review Dogs
         </p>
       </div>

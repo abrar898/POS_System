@@ -9,15 +9,15 @@ export function PaymentsBreakdownView() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">Payment method breakdown</h1>
-        <p className="mt-1 text-sm font-medium text-[#a0a8b2]">
-          <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">GET /api/analytics/payments-breakdown</code> — Cash / Card /
+        <h1 className="text-2xl font-black tracking-tight text-foreground">Payment method breakdown</h1>
+        <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+          <code className="font-mono text-[11px] font-bold text-foreground">GET /api/analytics/payments-breakdown</code> — Cash / Card /
           JazzCash / EasyPaisa / Voucher.
         </p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[28px] border border-[#EBEBF0] bg-white p-6 card-shadow">
+        <div className="rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-6 card-shadow">
           <div className="h-[320px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -57,7 +57,7 @@ export function PaymentsBreakdownView() {
               </div>
               <div className="text-right">
                 <p className="text-sm font-black tabular-nums">Rs. {p.amount.toLocaleString()}</p>
-                <p className="text-[11px] font-bold text-[#a0a8b2]">{p.pct}% share</p>
+                <p className="text-[11px] font-bold text-[var(--text-secondary)]">{p.pct}% share</p>
               </div>
             </div>
           ))}

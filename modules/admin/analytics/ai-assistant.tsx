@@ -23,16 +23,16 @@ export function AiAssistantView() {
   return (
     <div className="h-full overflow-y-auto p-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-black tracking-tight text-[#1a1a2e]">AI Lite assistant</h1>
-        <p className="mt-1 text-sm font-medium text-[#a0a8b2]">
-          <code className="font-mono text-[11px] font-bold text-[#1a1a2e]">POST /api/analytics/ai-query</code> — English / Urdu natural
+        <h1 className="text-2xl font-black tracking-tight text-foreground">AI Lite assistant</h1>
+        <p className="mt-1 text-sm font-medium text-[var(--text-secondary)]">
+          <code className="font-mono text-[11px] font-bold text-foreground">POST /api/analytics/ai-query</code> — English / Urdu natural
           language on analytics snapshots.
         </p>
       </div>
 
-      <div className="mx-auto max-w-2xl rounded-[36px] border border-[#EBEBF0] bg-[#1a1a2e] p-8 text-white shadow-2xl">
+      <div className="mx-auto max-w-2xl rounded-[36px] border border-[var(--border-default)] bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] p-8 text-white shadow-2xl">
         <div className="mb-6 flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
+          <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[var(--bg-card)]/10">
             <Sparkles className="text-pink-400" size={22} />
           </div>
           <div>
@@ -45,7 +45,7 @@ export function AiAssistantView() {
           onChange={(e) => setQ(e.target.value)}
           rows={3}
           placeholder="Type a question…"
-          className="w-full rounded-2xl border border-white/10 bg-white/5 p-4 text-sm font-medium text-white outline-none placeholder:text-white/25"
+          className="w-full rounded-2xl border border-white/10 bg-[var(--bg-card)]/5 p-4 text-sm font-medium text-white outline-none placeholder:text-white/25"
         />
         <button
           type="button"
@@ -58,7 +58,7 @@ export function AiAssistantView() {
       </div>
 
       {answer && (
-        <div className="mx-auto mt-6 max-w-2xl rounded-[28px] border border-[#EBEBF0] bg-white p-6 text-sm font-medium leading-relaxed text-[#1a1a2e] card-shadow">
+        <div className="mx-auto mt-6 max-w-2xl rounded-[28px] border border-[var(--border-default)] bg-[var(--bg-card)] p-6 text-sm font-medium leading-relaxed text-foreground card-shadow">
           {answer}
         </div>
       )}

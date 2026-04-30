@@ -15,6 +15,8 @@ import {
   Scale,
   Sparkles,
   Globe,
+  Search,
+  Bell,
 } from "lucide-react";
 
 const LINKS: { href: string; label: string; icon: ReactNode }[] = [
@@ -34,15 +36,15 @@ export function AdminShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen w-full bg-[#EDEDED] font-sans selection:bg-black/10 overflow-hidden text-slate-800">
+    <div className="flex flex-col lg:flex-row h-screen w-full bg-background font-sans selection:bg-[var(--btn-primary-bg)] overflow-hidden text-foreground">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex w-[80px] bg-white border-r border-slate-200 flex-col items-center py-8 overflow-y-auto custom-scrollbar shrink-0">
-        <Link href="/" className="w-10 h-10 bg-black rounded-xl flex items-center justify-center text-white shadow-lg mb-8 shrink-0">
+      <aside className="hidden lg:flex w-[80px] bg-[var(--bg-card)] border-r border-[var(--border-default)] flex-col items-center py-8 overflow-y-auto custom-scrollbar shrink-0">
+        <Link href="/" className="w-10 h-10 bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] rounded-xl flex items-center justify-center shadow-lg mb-8 shrink-0">
            <div className="grid grid-cols-2 gap-[2px]">
-              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-white opacity-100" />
-              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-white opacity-60" />
-              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-white opacity-40" />
-              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-white opacity-20" />
+              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-[var(--bg-card)] opacity-100" />
+              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-[var(--bg-card)] opacity-60" />
+              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-[var(--bg-card)] opacity-40" />
+              <div className="h-1.5 w-1.5 rounded-[0.5px] bg-[var(--bg-card)] opacity-20" />
            </div>
         </Link>
         
@@ -57,10 +59,10 @@ export function AdminShell({ children }: { children: ReactNode }) {
                 href={href}
                 title={label}
                 className={`transition-all duration-300 relative h-12 w-12 flex items-center justify-center rounded-2xl group ${
-                  active ? "bg-slate-50 text-black shadow-inner" : "text-slate-300 hover:text-black hover:bg-slate-50"
+                  active ? "bg-[var(--btn-primary-bg)] text-[var(--btn-primary-text)] shadow-inner" : "text-[var(--text-secondary)] hover:text-black hover:bg-slate-50"
                 }`}
               >
-                {active && <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-black rounded-r-full" />}
+                {active && <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-1.5 h-6 bg-[var(--btn-primary-bg)] rounded-r-full" />}
                 <div className={`${active ? "opacity-100 scale-110" : "opacity-100 group-hover:scale-110"} transition-all`}>
                   {icon}
                 </div>
@@ -77,11 +79,11 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       {/* Sidebar - Mobile/Bottom Nav */}
-      <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 bg-white shadow-2xl rounded-[30px] border border-slate-100 z-50 flex items-center justify-around px-2 overflow-x-auto custom-scrollbar no-scrollbar">
+      <nav className="lg:hidden fixed bottom-6 left-6 right-6 h-20 bg-[var(--bg-card)] shadow-2xl rounded-[30px] border border-[var(--border-default)] z-50 flex items-center justify-around px-2 overflow-x-auto custom-scrollbar no-scrollbar">
           {LINKS.map(({ href, icon }) => {
             const active = href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
              return (
-              <Link key={href} href={href} className={`shrink-0 px-3 ${active ? "text-black" : "text-slate-300"}`}>
+              <Link key={href} href={href} className={`shrink-0 px-3 ${active ? "text-[var(--btn-primary-bg)]" : "text-[var(--text-secondary)]"}`}>
                 {icon}
               </Link>
              );
@@ -89,27 +91,32 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </nav>
 
       {/* Main Area */}
-      <div className="flex-1 flex flex-col min-w-0 pb-32 lg:pb-0">
-        <header className="h-[100px] lg:h-[120px] px-6 lg:px-10 flex items-center justify-between shrink-0">
-          <div className="min-w-0">
-             <p className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
-                Analytics & Admin • Module 11
-             </p>
-             <h1 className="truncate text-xl lg:text-3xl font-black text-slate-800 tracking-tight">Admin Control</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-             <div className="hidden sm:block text-right mr-2">
-                <p className="text-xs font-black text-slate-800">Owner Access</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Main Branch</p>
-             </div>
-             <div className="h-12 w-12 rounded-[15px] overflow-hidden border-2 border-white shadow-lg ring-1 ring-slate-100">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Manager" alt="Avatar" />
-             </div>
+      <div className="flex-1 flex flex-col min-w-0 pb-0">
+        <header className="h-[80px] px-8 flex items-center justify-between shrink-0">
+          <h1 className="text-2xl font-extrabold tracking-tight text-foreground">
+            Assalam-o-Alaikum, Manager
+          </h1>
+          <div className="flex items-center gap-5">
+            <button className="text-[var(--text-secondary)] hover:text-foreground transition-colors">
+              <Search size={20} />
+            </button>
+            <div className="relative">
+              <button className="text-[var(--text-secondary)] hover:text-foreground transition-colors group">
+                <Bell size={20} />
+                <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-[#ef4444] rounded-full border-2 border-white group-hover:scale-125 transition-transform" />
+              </button>
+            </div>
+            <div className="w-10 h-10 rounded-xl overflow-hidden border-2 border-white shadow-md ring-1 ring-black/5 cursor-pointer hover:scale-105 transition-transform">
+              <img
+                src="https://api.dicebear.com/7.x/avataaars/svg?seed=Ethan"
+                alt="Profile"
+                className="w-full h-full object-cover bg-[#fde8d8]"
+              />
+            </div>
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-6 lg:px-10 pb-10">
+        <main className="flex-1 overflow-hidden px-6 lg:px-10 pb-10">
           {children}
         </main>
       </div>
