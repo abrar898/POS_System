@@ -45,13 +45,13 @@ export default function CompletedSidebar() {
   const [note, setNote] = useState('');
 
   return (
-    <div className="w-[320px] bg-[#F9F8F3] border-l border-black/10 flex flex-col shrink-0 z-10 p-5 space-y-4 overflow-y-auto no-scrollbar">
+    <div className="w-[320px] bg-[#FEFDFA] border-l border-black/10 flex flex-col shrink-0 z-10 p-5 space-y-4 overflow-y-auto no-scrollbar">
       <h2 className="font-extrabold text-[16px] text-black mb-2 tracking-tight">
         ORDER SUMMARY
       </h2>
 
       {/* Summary Card */}
-      <div className="bg-white border border-black rounded-[24px] overflow-hidden shadow-sm">
+      <div className="bg-[#FEFDFA] border border-black rounded-[24px] overflow-hidden shadow-sm">
         <div className="p-5 border-b border-black">
           <div className="text-[36px] font-bold leading-none text-black">{totalOrders}</div>
           <div className="text-[13px] text-[#737373] mt-1 font-semibold">Total Orders</div>
@@ -77,7 +77,7 @@ export default function CompletedSidebar() {
       </div>
 
       {/* Average Prep Time */}
-      <div className="bg-white border border-black rounded-[24px] p-5 shadow-sm">
+      <div className="bg-[#FEFDFA] border border-black rounded-[24px] p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
           <Clock size={18} className="text-black" />
           <span className="text-[11px] font-black uppercase tracking-wider text-black">AVERAGE PREP TIME</span>
@@ -87,7 +87,7 @@ export default function CompletedSidebar() {
       </div>
 
       {/* Kitchen Timer */}
-      <div className="bg-white border border-black rounded-[24px] p-5 shadow-sm">
+      <div className="bg-[#FEFDFA] border border-black rounded-[24px] p-5 shadow-sm">
         <div className="flex items-center gap-2 mb-2">
           <Timer size={18} className="text-black" />
           <span className="text-[11px] font-black uppercase tracking-wider text-black">KITCHEN TIMER</span>
@@ -110,7 +110,7 @@ export default function CompletedSidebar() {
       </div>
 
       {/* Notes */}
-      <div className="bg-white border border-black rounded-[24px] p-5 shadow-sm flex flex-col">
+      <div className="bg-[#FEFDFA] border border-black rounded-[24px] p-5 shadow-sm flex flex-col">
         <div className="flex items-center gap-2 mb-3">
           <FileText size={18} className="text-black" />
           <span className="text-[11px] font-black uppercase tracking-wider text-black">NOTES</span>
@@ -120,7 +120,7 @@ export default function CompletedSidebar() {
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Add kitchen note..."
-            className="w-full h-24 bg-white border border-black rounded-[18px] p-3 text-[13px] font-medium placeholder:text-[#737373]/50 focus:outline-none focus:ring-1 focus:ring-[#FECE04] transition-all resize-none no-scrollbar"
+            className="w-full h-24 bg-[#FEFDFA] border border-black rounded-[18px] p-3 text-[13px] font-medium placeholder:text-[#737373]/50 focus:outline-none focus:ring-1 focus:ring-[#FECE04] transition-all resize-none no-scrollbar"
           />
           {note && (
             <button
