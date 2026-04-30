@@ -38,8 +38,11 @@ export default function GoogleMapComponent({
     return route.map(pos => ({ lat: pos[0], lng: pos[1] }));
   }, [route]);
 
+  if (!isLoaded) return <div className="w-full bg-slate-50 animate-pulse" style={{ height }} />;
+
   // Custom Icons using Data URIs (Emojis like the Leaflet version)
-  const restaurantIcon = useMemo(() => ({
+  // We define these here because they require the 'google' object to be loaded
+  const restaurantIcon = {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40">
         <circle cx="20" cy="20" r="18" fill="white" stroke="#ef4444" stroke-width="2"/>
@@ -48,9 +51,9 @@ export default function GoogleMapComponent({
     `),
     scaledSize: new google.maps.Size(40, 40),
     anchor: new google.maps.Point(20, 20),
-  }), []);
+  };
 
-  const customerIcon = useMemo(() => ({
+  const customerIcon = {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
         <circle cx="22" cy="22" r="20" fill="#ef4444" stroke="white" stroke-width="2"/>
@@ -59,9 +62,9 @@ export default function GoogleMapComponent({
     `),
     scaledSize: new google.maps.Size(44, 44),
     anchor: new google.maps.Point(22, 22),
-  }), []);
+  };
 
-  const riderIcon = useMemo(() => ({
+  const riderIcon = {
     url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
       <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" viewBox="0 0 44 44">
         <circle cx="22" cy="22" r="20" fill="#3b82f6" stroke="white" stroke-width="2"/>
@@ -70,9 +73,7 @@ export default function GoogleMapComponent({
     `),
     scaledSize: new google.maps.Size(44, 44),
     anchor: new google.maps.Point(22, 22),
-  }), []);
-
-  if (!isLoaded) return <div className="w-full bg-slate-50 animate-pulse" style={{ height }} />;
+  };
 
   const mapCenter = riderPos ? { lat: riderPos[0], lng: riderPos[1] } : center;
 
