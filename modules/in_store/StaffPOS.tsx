@@ -1,43 +1,54 @@
-'use client';
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Pause, ShoppingBag, MoreHorizontal, Plus, Minus, Trash2, CheckCircle2, User, Wallet, CreditCard, Banknote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-
-const CATEGORIES = [
-  'Pizzas', 'Burgers', 'Sandwiches', 'Sides', 'Drinks', 'Desserts', 'Combos'
-];
-
-const PRODUCTS = [
-  { id: 'p1', name: 'Crown Crust Pizza', price: 1499, category: 'Pizzas', image: '/banner-food.png' },
-  { id: 'p2', name: 'Zinger Burger', price: 749, category: 'Burgers', image: '/banner-food.png' },
-  { id: 'p3', name: 'Loaded Fries', price: 499, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p4', name: 'Malai Boti Pizza', price: 1299, category: 'Pizzas', image: '/banner-food.png' },
-  { id: 'p5', name: 'Club Sandwich', price: 499, category: 'Sandwiches', image: '/banner-food.png' },
-  { id: 'p6', name: 'Cheesy Fries', price: 399, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p7', name: 'Chicken Wings (6pc)', price: 399, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p8', name: 'Pasta Alfredo', price: 699, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p9', name: 'Chocolate Lava Cake', price: 399, category: 'Desserts', image: '/banner-food.png' },
-];
+import { api } from '@/lib/api';
 
 export default function StaffPOS() {
-  const [activeCategory, setActiveCategory] = useState('Pizzas');
+  const [activeCategory, setActiveCategory] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState<any[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
   const [cart, setCart] = useState<{ id: string; name: string; price: number; quantity: number; image: string; size?: string }[]>([]);
   const [activeScreen, setActiveScreen] = useState<'pos' | 'payment' | 'confirmation'>('pos');
+  const [loading, setLoading] = useState(true);
+  const [orderNo, setOrderNo] = useState('');
 
-  const filteredProducts = PRODUCTS.filter(p => 
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await api.products.getAll();
+        setProducts(data);
+        const uniqueCategories = Array.from(new Set(data.map((p: any) => p.category))) as string[];
+        setCategories(uniqueCategories);
+        if (uniqueCategories.length > 0) setActiveCategory(uniqueCategories[0]);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  const filteredProducts = products.filter(p => 
     (activeCategory ? p.category === activeCategory : true) &&
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const addToCart = (product: typeof PRODUCTS[0]) => {
+  const addToCart = (product: any) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
         return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
       }
-      return [...prev, { ...product, quantity: 1, size: 'Regular' }];
+      return [...prev, { 
+        id: product.id, 
+        name: product.name, 
+        price: product.price, 
+        quantity: 1, 
+        image: product.image_url || '/banner-food.png', 
+        size: 'Regular' 
+      }];
     });
   };
 
@@ -56,13 +67,39 @@ export default function StaffPOS() {
   };
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const discount = 200; // Mock discount for the visual
+  const discount = 0; 
   const tax = subtotal * 0.12;
   const total = subtotal - discount + tax;
 
   const handleCheckout = () => {
     setActiveScreen('payment');
   };
+
+  const completeOrder = async (method: string) => {
+    try {
+      const orderData = {
+        customer_name: "Walk-in Customer",
+        items: cart.map(item => ({
+          product_id: item.id,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total_price: total,
+        status: "pending",
+        payment_method: method,
+        type: "dine_in"
+      };
+      
+      const response = await api.orders.create(orderData);
+      setOrderNo(response.id || 'CHZ-' + Math.floor(Math.random() * 10000));
+      setActiveScreen('confirmation');
+    } catch (err) {
+      console.error("Failed to create order:", err);
+      alert("Failed to complete order. Is the backend running?");
+    }
+  };
+
+  if (loading) return <div className="flex h-screen items-center justify-center bg-[#FDEFDE]">Loading POS System...</div>;
 
   return (
     <div className="flex h-screen bg-[#FDEFDE] font-sans overflow-hidden">
@@ -73,7 +110,7 @@ export default function StaffPOS() {
           CHEEZIOUS<span className="text-[#FECE04]">.</span>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2 no-scrollbar">
-          {CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -86,6 +123,7 @@ export default function StaffPOS() {
               {cat}
             </button>
           ))}
+          {categories.length === 0 && <p className="text-xs text-gray-400 p-4">No categories found</p>}
         </div>
         <div className="p-4 border-t border-[#737373]/20">
           <div className="flex items-center gap-3 text-[13px] text-[#737373]">
@@ -150,7 +188,7 @@ export default function StaffPOS() {
                     onClick={() => addToCart(product)}
                   >
                     <div className="h-[100px] w-full bg-[#FDEFDE]/50 rounded-lg mb-4 flex items-center justify-center overflow-hidden">
-                      <img src={product.image} alt={product.name} className="h-[80%] object-contain group-hover:scale-105 transition-transform duration-300" />
+                      <img src={product.image_url || '/banner-food.png'} alt={product.name} className="h-[80%] object-contain group-hover:scale-105 transition-transform duration-300" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold text-[#000000] text-[15px] leading-tight mb-1">{product.name}</h3>
@@ -166,6 +204,12 @@ export default function StaffPOS() {
                     </div>
                   </div>
                 ))}
+                {filteredProducts.length === 0 && (
+                  <div className="col-span-full flex flex-col items-center justify-center py-20 text-[#737373]">
+                    <ShoppingBag size={48} strokeWidth={1} className="mb-4 opacity-20" />
+                    <p>No products found in this category.</p>
+                  </div>
+                )}
               </motion.div>
             )}
 
@@ -198,27 +242,16 @@ export default function StaffPOS() {
                     </div>
                   </div>
 
-                  <div className="space-y-4 mb-8">
-                    <div className="flex justify-between items-center text-[15px]">
-                      <span className="text-[#737373]">Amount Received</span>
-                      <input type="text" defaultValue="3,000" className="w-[120px] h-10 px-3 bg-[#FDEFDE] border border-[#737373]/20 rounded-lg text-right font-semibold text-[#000000] focus:border-[#FECE04] outline-none" />
-                    </div>
-                    <div className="flex justify-between items-center text-[15px]">
-                      <span className="text-[#737373]">Return/Due</span>
-                      <span className="font-semibold text-[#000000]">Rs. 290</span>
-                    </div>
-                  </div>
-
                   <div className="grid grid-cols-3 gap-3 mb-8">
-                    <button className="flex flex-col items-center justify-center py-3 border-2 border-[#FECE04] bg-[#FDEFDE]/50 rounded-xl gap-2 transition-all">
-                      <Banknote size={24} className="text-[#000000]" />
-                      <span className="text-[13px] font-semibold text-[#000000]">Cash</span>
+                    <button onClick={() => completeOrder('cash')} className="flex flex-col items-center justify-center py-3 border border-[#737373]/20 rounded-xl gap-2 text-[#737373] hover:border-[#FECE04] hover:text-[#000000] hover:bg-[#FDEFDE]/50 transition-all">
+                      <Banknote size={24} />
+                      <span className="text-[13px] font-semibold">Cash</span>
                     </button>
-                    <button className="flex flex-col items-center justify-center py-3 border border-[#737373]/20 rounded-xl gap-2 text-[#737373] hover:border-[#FECE04] hover:text-[#000000] transition-all">
+                    <button onClick={() => completeOrder('card')} className="flex flex-col items-center justify-center py-3 border border-[#737373]/20 rounded-xl gap-2 text-[#737373] hover:border-[#FECE04] hover:text-[#000000] hover:bg-[#FDEFDE]/50 transition-all">
                       <CreditCard size={24} />
                       <span className="text-[13px] font-medium">Card</span>
                     </button>
-                    <button className="flex flex-col items-center justify-center py-3 border border-[#737373]/20 rounded-xl gap-2 text-[#737373] hover:border-[#FECE04] hover:text-[#000000] transition-all">
+                    <button onClick={() => completeOrder('wallet')} className="flex flex-col items-center justify-center py-3 border border-[#737373]/20 rounded-xl gap-2 text-[#737373] hover:border-[#FECE04] hover:text-[#000000] hover:bg-[#FDEFDE]/50 transition-all">
                       <Wallet size={24} />
                       <span className="text-[13px] font-medium">Wallet</span>
                     </button>
@@ -230,12 +263,6 @@ export default function StaffPOS() {
                       className="flex-1 py-4 text-[#000000] border border-[#737373]/20 rounded-xl font-bold hover:bg-[#FDEFDE] transition-colors"
                     >
                       Back
-                    </button>
-                    <button 
-                      onClick={() => setActiveScreen('confirmation')}
-                      className="flex-1 py-4 bg-[#811920] text-[#FEFDFA] rounded-xl font-bold hover:bg-[#6a151a] transition-colors"
-                    >
-                      Complete Payment
                     </button>
                   </div>
                 </div>
@@ -255,37 +282,22 @@ export default function StaffPOS() {
                     <CheckCircle2 size={32} className="text-[#000000]" />
                   </div>
                   <h2 className="text-2xl font-bold text-[#811920] mb-2">Order Placed Successfully!</h2>
-                  <p className="text-[#737373] mb-6">Order No. <span className="font-bold text-[#000000]">#CHZ-1025</span></p>
+                  <p className="text-[#737373] mb-6">Order ID: <span className="font-bold text-[#000000]">#{orderNo}</span></p>
                   
                   <div className="w-full bg-[#FDEFDE]/50 rounded-xl p-4 mb-8">
-                    <p className="text-[#000000] font-medium mb-4">Dine-in • Table 12</p>
+                    <p className="text-[#000000] font-medium mb-4">Dine-in • Walk-in</p>
                     <div className="flex justify-between items-center text-[15px] mb-2">
                       <span className="text-[#737373]">Paid Amount</span>
                       <span className="font-bold text-[#000000]">Rs. {total.toLocaleString()}</span>
                     </div>
-                    <div className="flex justify-between items-center text-[15px]">
-                      <span className="text-[#737373]">Payment Method</span>
-                      <span className="font-bold text-[#000000]">Cash</span>
-                    </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 w-full mb-4">
-                    <button className="py-3 border border-[#737373]/30 rounded-xl font-medium text-[#000000] hover:bg-[#FDEFDE] transition-colors">
-                      Print Receipt
-                    </button>
-                    <button className="py-3 bg-[#FECE04] rounded-xl font-bold text-[#000000] hover:bg-[#E5B800] transition-colors">
-                      Send to Kitchen
-                    </button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 w-full">
+                  <div className="grid grid-cols-1 gap-4 w-full">
                     <button 
                       onClick={() => { setCart([]); setActiveScreen('pos'); }}
-                      className="py-3 border border-[#737373]/30 rounded-xl font-medium text-[#000000] hover:bg-[#FDEFDE] transition-colors"
+                      className="py-3 bg-[#FECE04] rounded-xl font-bold text-[#000000] hover:bg-[#E5B800] transition-colors"
                     >
                       New Order
-                    </button>
-                    <button className="py-3 border border-[#737373]/30 rounded-xl font-medium text-[#000000] hover:bg-[#FDEFDE] transition-colors">
-                      View Orders
                     </button>
                   </div>
                 </div>

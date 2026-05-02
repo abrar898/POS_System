@@ -11,13 +11,17 @@ async def get_orders() -> List[OrderInDB]:
     cursor = db[COLLECTION_NAME].find().sort("created_at", -1)
     orders = []
     async for document in cursor:
+        document["_id"] = str(document["_id"])
         orders.append(OrderInDB(**document))
     return orders
 
 async def get_order(order_id: str) -> Optional[OrderInDB]:
     db = get_database()
+    if not ObjectId.is_valid(order_id):
+        return None
     document = await db[COLLECTION_NAME].find_one({"_id": ObjectId(order_id)})
     if document:
+        document["_id"] = str(document["_id"])
         return OrderInDB(**document)
     return None
 
@@ -27,11 +31,13 @@ async def create_order(order: OrderCreate) -> OrderInDB:
     order_dict["created_at"] = datetime.utcnow()
     order_dict["updated_at"] = datetime.utcnow()
     result = await db[COLLECTION_NAME].insert_one(order_dict)
-    order_dict["_id"] = result.inserted_id
+    order_dict["_id"] = str(result.inserted_id)
     return OrderInDB(**order_dict)
 
 async def update_order(order_id: str, order: OrderUpdate) -> Optional[OrderInDB]:
     db = get_database()
+    if not ObjectId.is_valid(order_id):
+        return None
     update_data = order.model_dump(by_alias=True, exclude_unset=True, exclude={"id"})
     update_data["updated_at"] = datetime.utcnow()
     await db[COLLECTION_NAME].update_one(
@@ -42,5 +48,7 @@ async def update_order(order_id: str, order: OrderUpdate) -> Optional[OrderInDB]
 
 async def delete_order(order_id: str) -> bool:
     db = get_database()
+    if not ObjectId.is_valid(order_id):
+        return False
     result = await db[COLLECTION_NAME].delete_one({"_id": ObjectId(order_id)})
     return result.deleted_count > 0

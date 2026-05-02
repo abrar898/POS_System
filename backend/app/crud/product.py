@@ -10,6 +10,7 @@ async def get_products() -> List[ProductInDB]:
     cursor = db[COLLECTION_NAME].find()
     products = []
     async for document in cursor:
+        document["_id"] = str(document["_id"])
         products.append(ProductInDB(**document))
     return products
 
@@ -17,6 +18,7 @@ async def get_product(product_id: str) -> Optional[ProductInDB]:
     db = get_database()
     document = await db[COLLECTION_NAME].find_one({"_id": ObjectId(product_id)})
     if document:
+        document["_id"] = str(document["_id"])
         return ProductInDB(**document)
     return None
 
@@ -24,7 +26,7 @@ async def create_product(product: ProductCreate) -> ProductInDB:
     db = get_database()
     product_dict = product.model_dump(by_alias=True, exclude={"id"})
     result = await db[COLLECTION_NAME].insert_one(product_dict)
-    product_dict["_id"] = result.inserted_id
+    product_dict["_id"] = str(result.inserted_id)
     return ProductInDB(**product_dict)
 
 async def update_product(product_id: str, product: ProductUpdate) -> Optional[ProductInDB]:

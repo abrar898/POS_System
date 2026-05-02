@@ -9,6 +9,7 @@ interface SidebarCartProps {
   removeFromCart: (id: string) => void;
   deleteFromCart: (id: string) => void;
   addToCart: (dish: any, variationIdx?: number) => void;
+  incrementCartQty: (id: string) => void;
   cartTotal: number;
   deliveryCharges: number;
   grandTotal: number;
@@ -21,6 +22,7 @@ export function SidebarCart({
   removeFromCart,
   deleteFromCart,
   addToCart,
+  incrementCartQty,
   cartTotal,
   deliveryCharges,
   grandTotal,
@@ -62,7 +64,7 @@ export function SidebarCart({
                   <div className="flex items-center gap-3 bg-gray-50 rounded-lg px-2 py-1 border border-gray-100">
                     <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-gray-900"><Minus size={14} /></button>
                     <span className="text-sm font-black w-4 text-center">{item.qty}</span>
-                    <button onClick={() => addToCart(DISHES.find(d => d.id === item.dishId) || DISHES[0], (DISHES.find(d => d.id === item.dishId) || DISHES[0]).variations?.findIndex(v => v.name === item.variation) ?? 0)} className="text-gray-400 hover:text-gray-900"><Plus size={14} /></button>
+                    <button onClick={() => incrementCartQty(item.id)} className="text-gray-400 hover:text-gray-900"><Plus size={14} /></button>
                   </div>
                   <span className="text-sm font-black text-gray-900">Rs {item.price * item.qty}</span>
                 </div>

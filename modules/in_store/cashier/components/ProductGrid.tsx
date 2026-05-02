@@ -1,26 +1,32 @@
-'use client';
-
-import { Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Plus, Loader2 } from 'lucide-react';
 import { useCashierStore } from '../store/useCashierStore';
 import { motion } from 'framer-motion';
-
-const PRODUCTS = [
-  { id: 'p1', name: 'Crown Crust Pizza', price: 1499, category: 'Pizzas', image: '/banner-food.png' },
-  { id: 'p2', name: 'Zinger Burger', price: 749, category: 'Burgers', image: '/banner-food.png' },
-  { id: 'p3', name: 'Loaded Fries', price: 499, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p4', name: 'Malai Boti Pizza', price: 1299, category: 'Pizzas', image: '/banner-food.png' },
-  { id: 'p5', name: 'Club Sandwich', price: 499, category: 'Sandwiches', image: '/banner-food.png' },
-  { id: 'p6', name: 'Cheesy Fries', price: 399, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p7', name: 'Chicken Wings (6pc)', price: 399, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p8', name: 'Pasta Alfredo', price: 699, category: 'Sides', image: '/banner-food.png' },
-  { id: 'p9', name: 'Chocolate Lava Cake', price: 399, category: 'Desserts', image: '/banner-food.png' },
-];
+import { api } from '@/lib/api';
 
 export default function ProductGrid() {
   const { activeCategory, searchQuery, addToCart } = useCashierStore();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const filteredProducts = PRODUCTS.filter(p => 
-    (activeCategory ? p.category === activeCategory : true) &&
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await api.products.getAll();
+        setProducts(data);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  if (loading) return <div className="absolute inset-0 flex items-center justify-center bg-[#FDEFDE]"><Loader2 className="animate-spin text-[#811920]" size={40} /></div>;
+  
+  const filteredProducts = products.filter(p => 
+    (activeCategory === 'All' || !activeCategory ? true : p.category === activeCategory) &&
     p.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -34,12 +40,12 @@ export default function ProductGrid() {
     >
       {filteredProducts.map(product => (
         <div 
-          key={product.id} 
+          key={product.id || product._id} 
           className="bg-[#FEFDFA] rounded-2xl p-4 shadow-sm border border-[#737373]/10 hover:border-[#FECE04] hover:shadow-md transition-all duration-300 group cursor-pointer flex flex-col h-[220px]"
-          onClick={() => addToCart(product)}
+          onClick={() => addToCart({ ...product, id: product.id || product._id, image: product.image_url || product.image })}
         >
           <div className="h-[100px] w-full bg-[#FDEFDE]/50 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
-            <img src={product.image} alt={product.name} className="h-[80%] object-contain group-hover:scale-110 transition-transform duration-300" />
+            <img src={product.image_url || product.image || '/banner-food.png'} alt={product.name} className="h-[80%] object-contain group-hover:scale-110 transition-transform duration-300" />
           </div>
           <div className="flex-1">
             <h3 className="font-bold text-[#000000] text-[15px] leading-tight mb-1 group-hover:text-[#811920] transition-colors">{product.name}</h3>
@@ -48,7 +54,7 @@ export default function ProductGrid() {
           <div className="flex justify-end mt-2">
             <button 
               className="w-8 h-8 bg-[#FECE04]/20 text-[#FECE04] group-hover:bg-[#FECE04] group-hover:text-[#000000] rounded-lg flex items-center justify-center transition-colors shadow-sm"
-              onClick={(e) => { e.stopPropagation(); addToCart(product); }}
+              onClick={(e) => { e.stopPropagation(); addToCart({ ...product, id: product.id || product._id, image: product.image_url || product.image }); }}
             >
               <Plus size={18} strokeWidth={3} />
             </button>
@@ -57,7 +63,7 @@ export default function ProductGrid() {
       ))}
       {filteredProducts.length === 0 && (
         <div className="col-span-full h-40 flex items-center justify-center text-[#737373] font-medium">
-          No items found.
+          No items found in {activeCategory}.
         </div>
       )}
     </motion.div>

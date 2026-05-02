@@ -2,6 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { Menu, X, MapPin, ChevronDown, User, ShoppingBag } from "lucide-react";
 import { COLORS } from "../constants";
+import { useCart } from "@/context/cart-context";
 
 interface NavbarProps {
   initialScreen: string;
@@ -11,6 +12,8 @@ interface NavbarProps {
 }
 
 export function Navbar({ initialScreen, isMobileMenuOpen, setIsMobileMenuOpen, grandTotal }: NavbarProps) {
+  const { lastOrderId } = useCart();
+  const trackLink = lastOrderId ? `/orders/${lastOrderId.replace('#','')}/track` : "/orders/track";
   return (
     <>
       <nav className="h-16 px-4 md:px-8 flex items-center justify-between border-b border-gray-100 sticky top-0 bg-white z-[60]">
@@ -27,7 +30,7 @@ export function Navbar({ initialScreen, isMobileMenuOpen, setIsMobileMenuOpen, g
           <div className="hidden md:flex items-center gap-8 text-[15px] font-bold">
             <Link href="/home" className={`${initialScreen === "menu" ? "text-[#811920] border-b-2 border-[#811920]" : "text-gray-900"} pb-0.5 transition-all`}>Home</Link>
             <Link href="/home" className="text-gray-900 hover:text-[#811920] transition-all">Menu</Link>
-            <Link href="/orders/CHZ-39403/track" className="text-gray-900 hover:text-[#811920] transition-colors">Track Order</Link>
+            {lastOrderId && <Link href={trackLink} className="text-gray-900 hover:text-[#811920] transition-colors">Track Order</Link>}
             <Link href="/deals" className={`${initialScreen === "deals" ? "text-[#811920] border-b-2 border-[#811920]" : "text-gray-900"} pb-0.5 transition-all`}>Deals</Link>
           </div>
         </div>
@@ -54,7 +57,7 @@ export function Navbar({ initialScreen, isMobileMenuOpen, setIsMobileMenuOpen, g
           <div className="absolute top-16 left-0 right-0 bg-white border-b border-gray-100 p-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
             <Link href="/home" className="text-lg font-black text-gray-900">Home</Link>
             <Link href="/home" className="text-lg font-black text-gray-900">Menu</Link>
-            <Link href="/orders/CHZ-39403/track" className="text-lg font-black text-gray-900">Track Order</Link>
+            {lastOrderId && <Link href={trackLink} className="text-lg font-black text-gray-900">Track Order</Link>}
             <Link href="/deals" className="text-lg font-black text-gray-900">Deals</Link>
             <div className="h-px bg-gray-100 my-2" />
             <div className="flex items-center gap-2 text-sm font-bold text-gray-700">

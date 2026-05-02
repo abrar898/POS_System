@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { produce } from "immer";
+import { api } from "@/lib/api";
 import type { CartLine, MenuItem, OrderStatus, OrderType, PosOrder, VoidReason } from "./types";
 import { BRANCH, findMenuItem, MENU_ITEMS } from "./mock-data";
 
@@ -84,51 +85,18 @@ interface OrderCashierState {
   removeLine: (lineId: string) => void;
 
   toggleHold: () => void;
-  sendToKitchen: () => void;
-  advanceStatus: () => void;
-  voidOrder: (reason: string) => void;
-  voidLine: (lineId: string, reason: VoidReason) => void;
+  sendToKitchen: () => Promise<void>;
+  advanceStatus: () => Promise<void>;
+  voidOrder: (reason: string) => Promise<void>;
+  voidLine: (lineId: string, reason: VoidReason) => Promise<void>;
+  fetchOrders: () => Promise<void>;
 }
 
-function getActive(state: OrderCashierState): PosOrder | undefined {
-  return state.orders.find((o) => o.id === state.activeOrderId);
-}
-
-export const useOrderCashierStore = create<OrderCashierState>((set) => {
-  const NAMES = ["Ethan Hunt", "Esther Howard", "Mark Davis", "Emily Garcia", "Jane Cooper", "Jenny Wilson", "Robert Fox", "Wade Warren"];
-  const TYPES: OrderType[] = ["dine_in", "takeaway", "delivery"];
-  const STATUSES: OrderStatus[] = ["completed", "sent", "ready", "served", "billed"];
-
-  const manyOrders: PosOrder[] = Array.from({ length: 20 }).map((_, i) => {
-    const numericId = (10020 + i).toString();
-    const localId = `local-${numericId}`;
-    const order = emptyOrder({
-      id: numericId,
-      localId,
-      customerName: NAMES[i % NAMES.length],
-      orderType: TYPES[i % TYPES.length],
-      status: STATUSES[i % STATUSES.length],
-      createdAt: new Date(Date.now() - i * 3600000).toISOString(),
-    });
-    // Add dummy items
-    order.items = Array.from({ length: (i % 4) + 1 }).map((_, j) => ({
-      id: `li-${localId}-${j}`,
-      menuItemId: "m1",
-      nameSnapshot: i % 2 === 0 ? "Classic Beef Burger" : "Scrambled egg toast",
-      priceSnapshot: 450 + (i * 10),
-      quantity: (j % 2) + 1,
-      modifiers: [],
-      isVoided: false,
-      voidReason: null,
-      notes: null
-    }));
-    recomputeTotals(order);
-    return order;
-  });
-
+export const useOrderCashierStore = create<OrderCashierState>((set, get) => {
   const first = emptyOrder({ tableLabel: "4", tableId: "tbl-4", orderType: "dine_in" });
+  
   return {
-    orders: [first, ...manyOrders],
+    orders: [first],
     activeOrderId: first.id,
     networkOnline: true,
     offlineQueue: [],
@@ -189,7 +157,6 @@ export const useOrderCashierStore = create<OrderCashierState>((set) => {
         produce((s: OrderCashierState) => {
           const o = s.orders.find((x) => x.id === s.activeOrderId);
           if (!o) return;
-          const modSum = modifiers.reduce((acc, m) => acc + m.priceAdjustment, 0);
           const line: CartLine = {
             id: newLocalId(),
             menuItemId: item.id,
@@ -231,7 +198,7 @@ export const useOrderCashierStore = create<OrderCashierState>((set) => {
             o.items.push({
               id: newLocalId(),
               menuItemId: ch.menuItemId,
-              nameSnapshot: `${name} (combo part — modifiers OK)`,
+              nameSnapshot: `${name} (combo part)`,
               priceSnapshot: 0,
               quantity: ch.qty,
               notes: null,
@@ -276,39 +243,87 @@ export const useOrderCashierStore = create<OrderCashierState>((set) => {
         })
       ),
 
-    sendToKitchen: () =>
-      set(
-        produce((s: OrderCashierState) => {
-          const o = s.orders.find((x) => x.id === s.activeOrderId);
-          if (!o || o.isHeld || o.items.length === 0) return;
-          o.status = "sent";
-          if (!s.networkOnline) {
-            s.offlineQueue.push({ localId: o.localId, at: Date.now() });
-          }
-        })
-      ),
+    sendToKitchen: async () => {
+      const state = get();
+      const o = state.orders.find((x) => x.id === state.activeOrderId);
+      if (!o || o.isHeld || o.items.length === 0) return;
 
-    advanceStatus: () =>
-      set(
-        produce((s: OrderCashierState) => {
-          const o = s.orders.find((x) => x.id === s.activeOrderId);
-          if (!o) return;
-          const i = STATUS_FLOW.indexOf(o.status);
-          if (i >= 0 && i < STATUS_FLOW.length - 1) o.status = STATUS_FLOW[i + 1];
-        })
-      ),
+      try {
+        const orderData = {
+          items: o.items.map(item => ({
+            product_id: item.menuItemId,
+            product_name: item.nameSnapshot,
+            quantity: item.quantity,
+            price: item.priceSnapshot
+          })),
+          total_price: o.totalAmount,
+          status: "sent",
+          table_number: o.tableLabel,
+          type: o.orderType,
+          customer_name: o.customerName || "Walk-in Customer"
+        };
+        
+        const response = await api.orders.create(orderData);
+        
+        set(
+          produce((s: OrderCashierState) => {
+            const active = s.orders.find((x) => x.id === s.activeOrderId);
+            if (active) {
+              active.id = response.id || response._id;
+              active.status = "sent";
+            }
+          })
+        );
+      } catch (err) {
+        console.error("Failed to send order to kitchen:", err);
+        throw err;
+      }
+    },
 
-    voidOrder: (reason) =>
-      set(
-        produce((s: OrderCashierState) => {
-          const o = s.orders.find((x) => x.id === s.activeOrderId);
-          if (!o) return;
-          o.status = "void";
-          o.notes = [o.notes, `VOID: ${reason}`].filter(Boolean).join(" | ");
-        })
-      ),
+    advanceStatus: async () => {
+      const state = get();
+      const o = state.orders.find((x) => x.id === state.activeOrderId);
+      if (!o || o.status === "draft") return;
 
-    voidLine: (lineId, reason) =>
+      const i = STATUS_FLOW.indexOf(o.status);
+      if (i >= 0 && i < STATUS_FLOW.length - 1) {
+        const nextStatus = STATUS_FLOW[i + 1];
+        try {
+          await api.orders.update(o.id, { status: nextStatus });
+          set(
+            produce((s: OrderCashierState) => {
+              const active = s.orders.find((x) => x.id === s.activeOrderId);
+              if (active) active.status = nextStatus;
+            })
+          );
+        } catch (err) {
+          console.error("Failed to advance order status:", err);
+        }
+      }
+    },
+
+    voidOrder: async (reason) => {
+      const state = get();
+      const o = state.orders.find((x) => x.id === state.activeOrderId);
+      if (!o) return;
+
+      try {
+        await api.orders.update(o.id, { status: "cancelled", notes: reason });
+        set(
+          produce((s: OrderCashierState) => {
+            const active = s.orders.find((x) => x.id === s.activeOrderId);
+            if (active) {
+              active.status = "void";
+              active.notes = [active.notes, `VOID: ${reason}`].filter(Boolean).join(" | ");
+            }
+          })
+        );
+      } catch (err) {
+        console.error("Failed to void order:", err);
+      }
+    },
+
+    voidLine: async (lineId, reason) => {
       set(
         produce((s: OrderCashierState) => {
           const o = s.orders.find((x) => x.id === s.activeOrderId);
@@ -327,7 +342,19 @@ export const useOrderCashierStore = create<OrderCashierState>((set) => {
           }
           recomputeTotals(o);
         })
-      ),
+      );
+    },
+
+    fetchOrders: async () => {
+      try {
+        const data = await api.orders.getAll();
+        // Here we could sync the backend orders with local tabs if needed
+        // For now, we'll just log them
+        console.log("Backend orders fetched for cashier:", data);
+      } catch (err) {
+        console.error("Failed to fetch orders for cashier store:", err);
+      }
+    }
   };
 });
 

@@ -42,22 +42,62 @@ const ALERT_CFG = {
 };
 
 export function SupervisorDashboard() {
-  const [waiters, setWaiters] = useState(WAITERS);
+  const [waiters, setWaiters] = useState<Waiter[]>([]);
   const [alerts, setAlerts] = useState(INIT_ALERTS);
   const [selected, setSelected] = useState<Waiter | null>(null);
   const [activeTab, setActiveTab] = useState<"overview"|"performance">("overview");
   const [isAlertPanelOpen, setIsAlertPanelOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const setStatus = (id: string, status: WaiterStatus) =>
-    setWaiters(p => p.map(w => w.id === id ? { ...w, status } : w));
+  const fetchWaiters = async () => {
+    try {
+      const data = await api.waiters.getAll();
+      const mappedWaiters: Waiter[] = data.map((w: any) => ({
+        id: w.id || w._id,
+        name: w.name,
+        section: w.assignedTables?.length ? `Tables ${w.assignedTables.join(", ")}` : "No Section",
+        status: w.status as WaiterStatus,
+        tablesServed: w.assignedTables?.length || 0,
+        ordersCompleted: Math.floor(Math.random() * 20), // Mocking for now as we don't have this in DB yet
+        rating: 4.5 + Math.random() * 0.5,
+        activeTable: w.assignedTables?.[0] || null,
+        avatar: w.name.charAt(0),
+        phone: w.phone,
+        joinedAt: w.joinedAt ? new Date(w.joinedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : "N/A"
+      }));
+      setWaiters(mappedWaiters);
+    } catch (err) {
+      console.error("Failed to fetch waiters for supervisor:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
+    fetchWaiters();
+    const interval = setInterval(fetchWaiters, 30000); // Refresh every 30s
+    return () => clearInterval(interval);
+  }, []);
+
+  const setStatus = async (id: string, status: WaiterStatus) => {
+    try {
+      await api.waiters.update(id, { status });
+      setWaiters(p => p.map(w => w.id === id ? { ...w, status } : w));
+    } catch (err) {
+      console.error("Failed to update waiter status:", err);
+    }
+  };
+
   const dismissAlert = (id: string) => setAlerts(p => p.filter(a => a.id !== id));
 
   const stats = {
     activeWaiters: waiters.filter(w => w.status === "active").length,
     totalOrders: waiters.reduce((s, w) => s + w.ordersCompleted, 0),
-    avgRating: (waiters.reduce((s, w) => s + w.rating, 0) / waiters.length).toFixed(1),
+    avgRating: waiters.length ? (waiters.reduce((s, w) => s + w.rating, 0) / waiters.length).toFixed(1) : "0.0",
     alerts: alerts.length,
   };
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-[#F5F6FA]">Loading Supervisor Dashboard...</div>;
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-[#F5F6FA] text-slate-900 font-sans overflow-hidden">

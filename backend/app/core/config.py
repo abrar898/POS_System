@@ -8,8 +8,10 @@ class Settings(BaseSettings):
     DATABASE_NAME: str = "pos_system"
     DEBUG: bool = True
     
-    class Config:
-        env_file = ".env"
+    model_config = {
+        "env_file": ".env",
+        "extra": "ignore"
+    }
 
 @lru_cache()
 def get_settings():

@@ -5,7 +5,7 @@ import { useCashierStore } from '../store/useCashierStore';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function CartSidebar() {
-  const { cart, clearCart, updateQuantity, discount, setActiveScreen } = useCashierStore();
+  const { cart, clearCart, updateQuantity, discount, setActiveScreen, holdCurrentOrder } = useCashierStore();
 
   const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
   const tax = Math.round(subtotal * 0.12);
@@ -100,6 +100,7 @@ export default function CartSidebar() {
         <div className="grid grid-cols-2 gap-3">
           <button 
             disabled={cart.length === 0}
+            onClick={holdCurrentOrder}
             className="py-4 border-2 border-[#737373]/20 rounded-xl text-[#000000] font-bold hover:bg-[#FDEFDE] hover:border-[#FECE04] transition-all text-[14px] disabled:opacity-50 disabled:pointer-events-none"
           >
             Hold Order

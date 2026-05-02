@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
 from typing import List
+from datetime import datetime
 from ..crud import order as order_crud
 from ..models.order import OrderCreate, OrderUpdate, OrderInDB
 
@@ -8,6 +9,24 @@ router = APIRouter()
 @router.get("/", response_model=List[OrderInDB])
 async def read_orders():
     return await order_crud.get_orders()
+
+@router.get("/stats")
+async def read_order_stats():
+    orders = await order_crud.get_orders()
+    today = datetime.now().date()
+    
+    today_revenue = sum(o.total_price for o in orders if o.created_at and o.created_at.date() == today)
+    total_revenue = sum(o.total_price for o in orders)
+    total_orders = len(orders)
+    
+    # Simple weekly calculation (last 7 days)
+    # Note: in a real app we'd use DB queries for efficiency
+    return {
+        "today_revenue": today_revenue,
+        "total_revenue": total_revenue,
+        "total_orders": total_orders,
+        "avg_order_value": total_revenue / total_orders if total_orders > 0 else 0
+    }
 
 @router.get("/{order_id}", response_model=OrderInDB)
 async def read_order(order_id: str):

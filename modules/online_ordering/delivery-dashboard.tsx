@@ -1,23 +1,13 @@
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import dynamic from "next/dynamic";
-import { Truck, Clock, CheckCircle2, MapPin, Phone, Search, X, Package, Bike, TrendingUp, AlertCircle, Eye, ChevronRight, Star, Navigation, RefreshCw, Menu } from "lucide-react";
+import { Truck, Clock, CheckCircle2, MapPin, Phone, Search, X, Package, Bike, TrendingUp, AlertCircle, Eye, ChevronRight, Star, Navigation, RefreshCw, Menu, Loader2 } from "lucide-react";
 import { getRoute } from "@/lib/routing";
+import { api } from "@/lib/api";
 
 const GoogleMap = dynamic(() => import("@/components/google-map"), { ssr: false });
 
-// Islamabad coords
 const RESTAURANT: [number, number] = [33.6844, 73.0479];
-
-const MOCK_ORDERS = [
-  { id: "ORD-928421", customer: "Ethan Blake", phone: "0301-4452110", address: "MCS Lalkurti, Gate 6", items: ["Cheese Burger ×2", "Cola ×1"], total: 1180, status: "dispatched", time: "2m ago", eta: 18, rider: "Ahmed Ali", riderPhone: "+92-312-4455667", placedAt: "10:30 AM", riderLat: 33.6900, riderLng: 73.0520, destLat: 33.6950, destLng: 73.0600 },
-  { id: "ORD-125421", customer: "Sara Malik", phone: "0321-5556660", address: "F-7/3, Blue Area", items: ["Margherita Pizza", "Garlic Bread"], total: 1050, status: "preparing", time: "8m ago", eta: 35, placedAt: "10:22 AM", riderLat: null, riderLng: null, destLat: 33.7090, destLng: 73.0551 },
-  { id: "ORD-998121", customer: "Ahmed Khan", phone: "0333-7778880", address: "G-11 Markaz", items: ["BBQ Chicken ×3", "Fries ×2"], total: 2450, status: "pending", time: "1m ago", eta: 55, placedAt: "10:35 AM", riderLat: null, riderLng: null, destLat: 33.6750, destLng: 73.0130 },
-  { id: "ORD-441221", customer: "Zara Hussain", phone: "0345-1234560", address: "DHA Phase 2", items: ["Fish Burger", "Chicken Burger"], total: 600, status: "delivered", time: "45m ago", eta: 0, rider: "Bilal Raza", riderPhone: "+92-311-9988776", placedAt: "09:45 AM", riderLat: 33.5180, destLat: 33.5180, riderLng: 73.1480, destLng: 73.1480 },
-  { id: "ORD-667321", customer: "Omar Sheikh", phone: "0312-9876540", address: "I-8/4 Islamabad", items: ["Beef Burger ×2"], total: 1100, status: "dispatched", time: "15m ago", eta: 8, rider: "Kamran Asif", riderPhone: "+92-333-5544332", placedAt: "10:15 AM", riderLat: 33.6677, riderLng: 73.0870, destLat: 33.6720, destLng: 73.0940 },
-];
-
-type Order = typeof MOCK_ORDERS[0];
 
 const STATUS_CFG: Record<string, { label: string; color: string; bg: string; border: string }> = {
   pending:   { label:"Pending",   color:"#f59e0b", bg:"#fef3c7", border: "#f59e0b22" },
@@ -28,30 +18,56 @@ const STATUS_CFG: Record<string, { label: string; color: string; bg: string; bor
 };
 
 export function DeliveryDashboard() {
-  const [orders, setOrders] = useState(MOCK_ORDERS);
-  const [selected, setSelected] = useState<Order>(MOCK_ORDERS[0]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [selected, setSelected] = useState<any>(null);
   const [filter, setFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [riderPos, setRiderPos] = useState<[number, number]>(
-    selected.riderLat ? [selected.riderLat, selected.riderLng!] : RESTAURANT
-  );
+  const [riderPos, setRiderPos] = useState<[number, number]>(RESTAURANT);
   const [route, setRoute] = useState<[number, number][]>([]);
+  const [loading, setLoading] = useState(true);
   const animRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const fetchOrders = async () => {
+    try {
+      const data = await api.orders.getAll();
+      const deliveryOrders = data.filter((o: any) => o.type === "delivery");
+      setOrders(deliveryOrders);
+      if (deliveryOrders.length > 0 && !selected) {
+        setSelected(deliveryOrders[0]);
+      }
+    } catch (err) {
+      console.error("Failed to fetch delivery orders:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 30000); // Poll every 30s
+    return () => clearInterval(interval);
+  }, []);
 
   // Fetch route when selected order changes
   useEffect(() => {
     async function updateRoute() {
-      if (selected.riderLat && selected.destLat) {
-        const start: [number, number] = [selected.riderLat, selected.riderLng!];
-        const end: [number, number] = [selected.destLat, selected.destLng!];
+      if (!selected) return;
+      
+      // Using some mock coordinates based on order ID if real ones aren't in DB yet
+      const destLat = selected.destLat || 33.6844 + (Math.random() - 0.5) * 0.05;
+      const destLng = selected.destLng || 73.0479 + (Math.random() - 0.5) * 0.05;
+      const riderLat = selected.riderLat || 33.6844;
+      const riderLng = selected.riderLng || 73.0479;
+
+      if (selected.status === "dispatched") {
+        const start: [number, number] = [riderLat, riderLng];
+        const end: [number, number] = [destLat, destLng];
         const newRoute = await getRoute(start, end);
         setRoute(newRoute);
-      } else if (selected.destLat) {
-         const newRoute = await getRoute(RESTAURANT, [selected.destLat, selected.destLng!]);
-         setRoute(newRoute);
       } else {
-        setRoute([]);
+         const newRoute = await getRoute(RESTAURANT, [destLat, destLng]);
+         setRoute(newRoute);
       }
     }
     updateRoute();
@@ -59,8 +75,8 @@ export function DeliveryDashboard() {
 
   // Animate rider marker
   useEffect(() => {
-    if (selected.status !== "dispatched" || route.length === 0) {
-      setRiderPos(selected.riderLat ? [selected.riderLat, selected.riderLng!] : RESTAURANT);
+    if (!selected || selected.status !== "dispatched" || route.length === 0) {
+      setRiderPos(RESTAURANT);
       return;
     }
     
@@ -79,23 +95,35 @@ export function DeliveryDashboard() {
     return () => { if (animRef.current) clearInterval(animRef.current); };
   }, [selected, route]);
 
-  const advanceStatus = (id: string) => {
+  const advanceStatus = async (id: string) => {
+    const order = orders.find(o => o.id === id);
+    if (!order) return;
+
     const nxt: Record<string, string> = { pending:"preparing", preparing:"dispatched", dispatched:"delivered" };
-    setOrders(p => p.map(o => o.id === id ? { ...o, status: nxt[o.status] || o.status } : o));
-    if (selected.id === id) setSelected(p => ({ ...p, status: nxt[p.status] || p.status }));
+    const nextStatus = nxt[order.status] || order.status;
+    
+    try {
+      await api.orders.update(id, { status: nextStatus });
+      fetchOrders();
+    } catch (err) {
+      console.error("Failed to update order status:", err);
+      alert("Update failed");
+    }
   };
 
   const stats = {
     total: orders.length,
     dispatched: orders.filter(o => o.status === "dispatched").length,
     delivered: orders.filter(o => o.status === "delivered").length,
-    revenue: orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + o.total, 0),
+    revenue: orders.filter(o => o.status !== "cancelled").reduce((s, o) => s + (o.total_price || 0), 0),
   };
 
   const filtered = orders.filter(o =>
     (filter === "all" || o.status === filter) &&
-    (o.id.toLowerCase().includes(search.toLowerCase()) || o.customer.toLowerCase().includes(search.toLowerCase()))
+    (o.id.toLowerCase().includes(search.toLowerCase()) || (o.customer_name || "").toLowerCase().includes(search.toLowerCase()))
   );
+
+  if (loading) return <div className="h-screen flex items-center justify-center bg-gray-50"><Loader2 className="animate-spin text-slate-900" /></div>;
 
   return (
     <div className="flex flex-col md:flex-row h-screen w-full bg-gray-50 overflow-hidden text-slate-800 font-sans">
@@ -162,8 +190,8 @@ export function DeliveryDashboard() {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-2 bg-gray-50/50">
           {filtered.map(order => {
-            const cfg = STATUS_CFG[order.status];
-            const isActive = selected.id === order.id;
+            const cfg = STATUS_CFG[order.status] || STATUS_CFG.pending;
+            const isActive = selected?.id === order.id;
             return (
               <div 
                 key={order.id} 
@@ -172,20 +200,20 @@ export function DeliveryDashboard() {
               >
                 <div className="flex items-start justify-between mb-2">
                   <div>
-                    <div className="text-[13px] font-black text-slate-900">{order.customer}</div>
-                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">#{order.id}</div>
+                    <div className="text-[13px] font-black text-slate-900">{order.customer_name || "Unknown"}</div>
+                    <div className="text-[10px] text-slate-400 font-mono mt-0.5">#{(order.id || order._id || '000000').toString().slice(-6)}</div>
                   </div>
                   <span className="px-2 py-1 rounded-full text-[9px] font-black border" style={{ backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.border }}>{cfg.label}</span>
                 </div>
                 <div className="flex items-center gap-1.5 mb-3">
                   <MapPin size={11} className="text-slate-400"/>
-                  <span className="text-[11px] text-slate-500 truncate">{order.address}</span>
+                  <span className="text-[11px] text-slate-500 truncate">{order.address || "DHA Islamabad"}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-black text-slate-900">{order.total} <span className="text-[10px] text-slate-400 font-bold">PKR</span></span>
+                  <span className="text-sm font-black text-slate-900">{order.total_price} <span className="text-[10px] text-slate-400 font-bold">PKR</span></span>
                   <div className="flex items-center gap-2">
-                    {order.eta > 0 && (
-                      <span className="text-[10px] text-amber-600 font-black flex items-center gap-1"><Clock size={11}/> {order.eta}m</span>
+                    {order.status === "dispatched" && (
+                      <span className="text-[10px] text-amber-600 font-black flex items-center gap-1"><Clock size={11}/> 15m</span>
                     )}
                     {["pending","preparing","dispatched"].includes(order.status) && (
                       <button 
@@ -200,70 +228,73 @@ export function DeliveryDashboard() {
               </div>
             );
           })}
+          {filtered.length === 0 && <div className="py-10 text-center text-xs text-slate-400 font-bold uppercase tracking-widest">No orders found</div>}
         </div>
       </aside>
 
       {/* ── MAIN CONTENT ── */}
       <main className="flex-1 relative p-4 md:p-6 overflow-hidden">
         <div className="w-full h-full rounded-[24px] md:rounded-[32px] overflow-hidden border border-gray-200 shadow-2xl relative">
-            <GoogleMap 
-              restaurantPos={RESTAURANT}
-              customerPos={selected.destLat ? [selected.destLat, selected.destLng!] : RESTAURANT}
-              riderPos={selected.status === "dispatched" ? riderPos : undefined}
-              route={route}
-              height="100%"
-            />
+            {selected ? (
+              <>
+                <GoogleMap 
+                  restaurantPos={RESTAURANT}
+                  customerPos={selected.destLat ? [selected.destLat, selected.destLng!] : RESTAURANT}
+                  riderPos={selected.status === "dispatched" ? riderPos : undefined}
+                  route={route}
+                  height="100%"
+                />
 
-            {/* Map overlay: selected order info */}
-            <div className="absolute top-4 left-4 md:top-8 md:left-8 bg-white/95 backdrop-blur rounded-[20px] md:rounded-[24px] p-4 md:p-5 border border-gray-200 shadow-xl min-w-[240px] md:min-w-[280px] z-[900]">
-              <div className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Tracking Order</div>
-              <div className="flex gap-3 md:gap-4 items-center">
-                <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-16 bg-slate-100 flex items-center justify-center shrink-0">
-                    <Package className="w-5 h-5 md:w-6 md:h-6 text-slate-900" />
-                </div>
-                <div className="overflow-hidden">
-                    <div className="text-sm md:text-base font-black text-slate-900 truncate">{selected.customer}</div>
-                    <div className="text-[11px] md:text-[12px] text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11}/> {selected.address}</div>
-                </div>
-              </div>
-              <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
-                <div className="flex justify-between items-center">
-                    <span className="text-[11px] md:text-[12px] font-bold text-slate-400 uppercase">Status</span>
-                    <span className="px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-black border" style={{ backgroundColor: STATUS_CFG[selected.status].bg, color: STATUS_CFG[selected.status].color, borderColor: STATUS_CFG[selected.status].border }}>
-                      {STATUS_CFG[selected.status].label}
-                    </span>
-                </div>
-                {selected.eta > 0 && (
-                    <div className="flex justify-between items-center mt-2.5">
-                        <span className="text-[11px] md:text-[12px] font-bold text-slate-400 uppercase">Est. Arrival</span>
-                        <span className="text-[11px] md:text-[12px] text-amber-600 font-black">{selected.eta} mins</span>
+                {/* Map overlay: selected order info */}
+                <div className="absolute top-4 left-4 md:top-8 md:left-8 bg-white/95 backdrop-blur rounded-[20px] md:rounded-[24px] p-4 md:p-5 border border-gray-200 shadow-xl min-w-[240px] md:min-w-[280px] z-[900]">
+                  <div className="text-[10px] md:text-[11px] font-black text-slate-400 uppercase tracking-widest mb-3">Tracking Order</div>
+                  <div className="flex gap-3 md:gap-4 items-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-16 bg-slate-100 flex items-center justify-center shrink-0">
+                        <Package className="w-5 h-5 md:w-6 md:h-6 text-slate-900" />
                     </div>
+                    <div className="overflow-hidden">
+                        <div className="text-sm md:text-base font-black text-slate-900 truncate">{selected.customer_name || "Guest"}</div>
+                        <div className="text-[11px] md:text-[12px] text-slate-500 flex items-center gap-1 mt-0.5 truncate"><MapPin size={11}/> {selected.address || "Main Blvd, Islamabad"}</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
+                    <div className="flex justify-between items-center">
+                        <span className="text-[11px] md:text-[12px] font-bold text-slate-400 uppercase">Status</span>
+                        <span className="px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-black border" style={{ backgroundColor: (STATUS_CFG[selected.status] || STATUS_CFG.pending).bg, color: (STATUS_CFG[selected.status] || STATUS_CFG.pending).color, borderColor: (STATUS_CFG[selected.status] || STATUS_CFG.pending).border }}>
+                          {(STATUS_CFG[selected.status] || STATUS_CFG.pending).label}
+                        </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Rider detail card (Mocked for now as we don't have rider assignment in DB yet) */}
+                {selected.status === "dispatched" && (
+                  <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 bg-white/95 backdrop-blur rounded-[24px] md:rounded-[28px] p-4 md:p-6 border border-gray-200 shadow-2xl flex flex-col md:flex-row items-center gap-4 md:gap-5 md:min-w-[440px] z-[900]">
+                    <div className="flex items-center gap-4 w-full md:w-auto">
+                      <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-18 overflow-hidden border-2 border-slate-100 shrink-0">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" alt="Rider" className="w-full h-full object-cover" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm md:text-[15px] font-black text-slate-900 truncate">Rider Assigned</div>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><Star key={i} size={10} className="fill-amber-500 text-transparent"/>)}</div>
+                          <span className="text-[10px] text-slate-400 font-bold">4.9</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between w-full md:w-auto md:flex-col md:items-end md:gap-2 border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-5">
+                      <div className="text-[13px] md:text-sm text-amber-600 font-black">15 mins left</div>
+                      <button className="flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-xl bg-emerald-500 text-white text-xs md:text-sm font-black shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-transform">
+                        <Phone size={14}/> Call
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </div>
-            </div>
-
-            {/* Rider detail card */}
-            {selected.rider && selected.status === "dispatched" && (
-              <div className="absolute bottom-4 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 bg-white/95 backdrop-blur rounded-[24px] md:rounded-[28px] p-4 md:p-6 border border-gray-200 shadow-2xl flex flex-col md:flex-row items-center gap-4 md:gap-5 md:min-w-[440px] z-[900]">
-                <div className="flex items-center gap-4 w-full md:w-auto">
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-xl md:rounded-18 overflow-hidden border-2 border-slate-100 shrink-0">
-                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop&crop=face" alt="Rider" className="w-full h-full object-cover" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm md:text-[15px] font-black text-slate-900 truncate">{selected.rider}</div>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <div className="flex gap-0.5">{[1,2,3,4,5].map(i=><Star key={i} size={10} className="fill-amber-500 text-transparent"/>)}</div>
-                      <span className="text-[10px] text-slate-400 font-bold">4.9</span>
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 font-bold">{selected.riderPhone}</div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between w-full md:w-auto md:flex-col md:items-end md:gap-2 border-t md:border-t-0 md:border-l border-gray-100 pt-3 md:pt-0 md:pl-5">
-                  <div className="text-[13px] md:text-sm text-amber-600 font-black">{selected.eta} mins left</div>
-                  <a href={`tel:${selected.riderPhone}`} className="flex items-center gap-2 px-4 py-2 md:py-2.5 rounded-xl bg-emerald-500 text-white text-xs md:text-sm font-black shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-transform">
-                    <Phone size={14}/> Call
-                  </a>
-                </div>
+              </>
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gray-50 text-slate-400">
+                <Bike size={48} strokeWidth={1.5} className="mb-4 opacity-20"/>
+                <p className="font-bold uppercase tracking-[0.2em] text-xs">Select an order to track</p>
               </div>
             )}
 

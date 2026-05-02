@@ -1,30 +1,39 @@
+from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
-from pydantic import Field
-from ..db.base import MongoBaseModel
 
-class OrderItem(MongoBaseModel):
+class OrderItem(BaseModel):
     product_id: str
-    product_name: str
+    product_name: Optional[str] = None
     quantity: int
     price: float
 
-class OrderBase(MongoBaseModel):
+class OrderBase(BaseModel):
     items: List[OrderItem]
-    total_amount: float
-    status: str = "pending" # pending, preparing, ready, completed, cancelled
+    total_price: float
+    status: str = "pending" # pending, preparing, dispatched, delivered, cancelled
     table_number: Optional[str] = None
     customer_name: Optional[str] = None
+    payment_method: Optional[str] = "Cash"
+    type: Optional[str] = "dine-in" # dine-in, delivery, takeaway
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class OrderCreate(OrderBase):
     pass
 
-class OrderUpdate(OrderBase):
+class OrderUpdate(BaseModel):
     items: Optional[List[OrderItem]] = None
-    total_amount: Optional[float] = None
+    total_price: Optional[float] = None
     status: Optional[str] = None
+    table_number: Optional[str] = None
+    customer_name: Optional[str] = None
+    payment_method: Optional[str] = None
+    type: Optional[str] = None
 
 class OrderInDB(OrderBase):
-    pass
+    id: Optional[str] = Field(alias="_id", default=None)
+    
+    class Config:
+        populate_by_name = True
+        arbitrary_types_allowed = True

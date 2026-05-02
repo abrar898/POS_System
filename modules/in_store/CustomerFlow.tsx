@@ -1,34 +1,22 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Search, Plus, Minus, Trash2, CheckCircle2, ChevronLeft, CreditCard, Banknote, Wallet, Phone, ShoppingBag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Plus, Minus, Trash2, CheckCircle2, ChevronLeft, CreditCard, Banknote, Wallet, Phone, ShoppingBag, Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { api } from '@/lib/api';
 
 type Step = 'welcome' | 'menu' | 'customize' | 'cart' | 'addons' | 'details' | 'payment' | 'confirmed';
 
 const CATEGORIES = ['Pizzas', 'Burgers', 'Sides', 'Drinks', 'Deals'];
 
-const BESTSELLERS = [
-  { id: 'p1', name: 'Crown Crust Pizza', price: 1499, image: '/banner-food.png', desc: 'Loaded with cheese and delicious toppings on our signature crust.' },
-  { id: 'p2', name: 'Zinger Burger', price: 749, image: '/banner-food.png', desc: 'Crispy chicken fillet with fresh lettuce and mayo.' },
-  { id: 'p3', name: 'Loaded Fries', price: 499, image: '/banner-food.png', desc: 'Fries loaded with cheese, jalapenos and chicken chunks.' },
-  { id: 'p4', name: 'Cheesy Fries', price: 199, image: '/banner-food.png', desc: 'Classic fries with melted cheese.' },
-  { id: 'p5', name: 'Cheezious Signature', price: 550, image: '/banner-food.png', desc: 'Our signature sandwich with secret sauce.' },
-  { id: 'p6', name: 'Mint Margarita', price: 249, image: '/banner-food.png', desc: 'Refreshing mint and lemon blended drink.' },
-  { id: 'p7', name: 'Chicken Wings (6pc)', price: 399, image: '/banner-food.png', desc: 'Spicy and tangy buffalo wings.' },
-  { id: 'p8', name: 'Pasta Alfredo', price: 699, image: '/banner-food.png', desc: 'Creamy fettuccine alfredo with grilled chicken.' },
-];
-
-const ADDONS = [
-  { id: 'a1', name: 'Burger Combo', desc: 'Burger + Fries + Drink', price: 299, image: '/banner-food.png' },
-  { id: 'a2', name: 'Pizza Combo', desc: 'Pizza + Fries + Drink', price: 499, image: '/banner-food.png' },
-  { id: 'a3', name: 'Snack Combo', desc: 'Wings + Fries + Drink', price: 349, image: '/banner-food.png' },
-];
-
 export default function CustomerFlow() {
   const [step, setStep] = useState<Step>('welcome');
   const [activeCategory, setActiveCategory] = useState('Pizzas');
   
+  // Data State
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
   // Customization State
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [size, setSize] = useState('Regular');
@@ -42,6 +30,23 @@ export default function CustomerFlow() {
   // Details State
   const [orderType, setOrderType] = useState('Dine-in');
   const [tableNo, setTableNo] = useState(12);
+  const [paymentMethod, setPaymentMethod] = useState('Cash');
+  const [orderId, setOrderId] = useState('');
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const data = await api.products.getAll();
+        setProducts(data || []);
+      } catch (err) {
+        console.error("Failed to fetch products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   const slideVariants = {
     initial: { x: 50, opacity: 0 },
@@ -80,6 +85,38 @@ export default function CustomerFlow() {
   const subtotal = cart.reduce((sum, item) => sum + (item.finalPrice * item.quantity), 0);
   const tax = Math.round(subtotal * 0.12);
   const total = subtotal + tax;
+
+  const handlePlaceOrder = async () => {
+    setIsPlacingOrder(true);
+    try {
+      const orderData = {
+        customer_name: "In-Store Customer",
+        table_number: orderType === 'Dine-in' ? tableNo.toString() : "Takeaway",
+        items: cart.map(item => ({
+          product_id: item.id || item._id,
+          product_name: item.name,
+          quantity: item.quantity,
+          price: item.finalPrice
+        })),
+        total_price: total,
+        status: "pending",
+        payment_method: paymentMethod,
+        type: orderType.toLowerCase()
+      };
+      
+      const response = await api.orders.create(orderData);
+      const rawId = response.id || response._id || "";
+      const newOrderId = rawId || `#CHZ-${Math.floor(10000 + Math.random() * 90000)}`;
+      
+      setOrderId(newOrderId);
+      setStep('confirmed');
+    } catch (error) {
+      console.error("Failed to place order:", error);
+      alert("Failed to place order. Please try again.");
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-[#FDEFDE] font-sans">
@@ -177,25 +214,31 @@ export default function CustomerFlow() {
                         <button className="text-base text-[#811920] font-bold hover:underline">View All</button>
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 pb-32">
-                        {BESTSELLERS.map(item => (
-                          <div 
-                            key={item.id} 
-                            onClick={() => { setSelectedItem(item); setStep('customize'); }}
-                            className="bg-white p-5 rounded-2xl border border-[#737373]/10 shadow-sm flex flex-col cursor-pointer hover:border-[#FECE04] hover:shadow-md transition-all group h-[280px]"
-                          >
-                            <div className="h-[120px] w-full bg-[#FDEFDE]/40 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
-                              <img src={item.image} alt={item.name} className="h-[90%] object-contain group-hover:scale-110 transition-transform duration-300" />
-                            </div>
-                            <h4 className="font-bold text-lg leading-tight mb-1 group-hover:text-[#811920] transition-colors">{item.name}</h4>
-                            <p className="text-sm text-[#737373] line-clamp-2 mb-3">{item.desc}</p>
-                            <div className="mt-auto flex justify-between items-center">
-                              <span className="font-extrabold text-lg">Rs. {item.price}</span>
-                              <button className="w-10 h-10 bg-[#FECE04] rounded-xl flex items-center justify-center text-black shadow-sm group-hover:bg-[#E5B800]">
-                                <Plus size={20} />
-                              </button>
-                            </div>
+                        {loading ? (
+                          <div className="col-span-full flex justify-center items-center py-20">
+                            <Loader2 size={40} className="animate-spin text-[#811920]" />
                           </div>
-                        ))}
+                        ) : (
+                          products.filter(p => activeCategory === 'Pizzas' ? true : p.category?.toLowerCase() === activeCategory.toLowerCase()).map(item => (
+                            <div 
+                              key={item.id || item._id} 
+                              onClick={() => { setSelectedItem({ ...item, id: item.id || item._id }); setStep('customize'); }}
+                              className="bg-white p-5 rounded-2xl border border-[#737373]/10 shadow-sm flex flex-col cursor-pointer hover:border-[#FECE04] hover:shadow-md transition-all group h-[280px]"
+                            >
+                              <div className="h-[120px] w-full bg-[#FDEFDE]/40 rounded-xl mb-4 flex items-center justify-center overflow-hidden">
+                                <img src={item.image_url || item.image || '/banner-food.png'} alt={item.name} className="h-[90%] object-contain group-hover:scale-110 transition-transform duration-300" />
+                              </div>
+                              <h4 className="font-bold text-lg leading-tight mb-1 group-hover:text-[#811920] transition-colors">{item.name}</h4>
+                              <p className="text-sm text-[#737373] line-clamp-2 mb-3">{item.description || item.desc}</p>
+                              <div className="mt-auto flex justify-between items-center">
+                                <span className="font-extrabold text-lg">Rs. {item.price}</span>
+                                <button className="w-10 h-10 bg-[#FECE04] rounded-xl flex items-center justify-center text-black shadow-sm group-hover:bg-[#E5B800]">
+                                  <Plus size={20} />
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
                     </div>
                   </div>
@@ -581,10 +624,12 @@ export default function CustomerFlow() {
                     </div>
 
                     <button 
-                      onClick={() => setStep('confirmed')}
-                      className="w-full bg-[#811920] hover:bg-[#6a151a] text-white font-extrabold py-5 rounded-2xl shadow-md transition-colors text-xl flex justify-center items-center gap-3"
+                      onClick={handlePlaceOrder}
+                      disabled={isPlacingOrder}
+                      className="w-full bg-[#811920] hover:bg-[#6a151a] text-white font-extrabold py-5 rounded-2xl shadow-md transition-colors text-xl flex justify-center items-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <CheckCircle2 size={24} /> Pay Rs. {total.toLocaleString()} Now
+                      {isPlacingOrder ? <Loader2 className="animate-spin" size={24} /> : <CheckCircle2 size={24} />} 
+                      {isPlacingOrder ? 'Processing...' : `Pay Rs. ${total.toLocaleString()} Now`}
                     </button>
                   </div>
                 </div>
@@ -613,7 +658,7 @@ export default function CustomerFlow() {
                   
                   <div className="bg-[#FDEFDE]/50 w-full rounded-2xl p-8 mb-10 border border-[#FECE04]/30">
                     <p className="text-lg text-[#737373] mb-2 font-medium">Your Order Number</p>
-                    <h3 className="text-5xl font-extrabold text-[#811920] tracking-wider mb-6">#CHZ-1025</h3>
+                    <h3 className="text-5xl font-extrabold text-[#811920] tracking-wider mb-6">#{orderId.toString().slice(-6).toUpperCase()}</h3>
                     <p className="text-base text-[#737373] mb-6">Please keep your receipt. We've received your order and it's currently being prepared by our kitchen staff.</p>
                     <div className="border-t border-[#737373]/20 pt-6 flex justify-between items-center px-4">
                       <p className="text-lg text-[#737373] font-medium">Estimated Time</p>

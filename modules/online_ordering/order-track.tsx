@@ -4,10 +4,11 @@ import React, { useState, useEffect } from "react";
 import { 
   ChevronLeft, MapPin, Navigation, Clock, Phone, Info, LayoutGrid, 
   Home, BarChart2, ShoppingBag, UtensilsCrossed, Settings, User, 
-  ChevronDown, CheckCircle2, Bike, Package, ChefHat, Menu, X
+  ChevronDown, CheckCircle2, Bike, Package, ChefHat, Menu, X, Loader2
 } from "lucide-react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
+import { api } from "@/lib/api";
 
 // Colors from design.txt
 const COLORS = {
@@ -26,8 +27,51 @@ const GoogleMapComponent = dynamic(() => import("@/components/google-map"), {
 });
 
 export function OrderTrackPage({ orderId }: { orderId: string }) {
-  const [status, setStatus] = useState<"placed" | "preparing" | "delivery" | "delivered">("preparing");
+  const [order, setOrder] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const fetchOrder = async () => {
+    try {
+      const data = await api.orders.getOne(orderId);
+      setOrder(data);
+    } catch (err) {
+      console.error("Failed to fetch order for tracking:", err);
+      // Fallback for demo/dummy IDs
+      if (!order) {
+        setOrder({
+          id: orderId,
+          status: "preparing",
+          total_price: 0,
+          items: [],
+          created_at: new Date().toISOString(),
+          customer_name: "Demo Customer",
+          isDemo: true
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchOrder();
+    const interval = setInterval(fetchOrder, 10000); // Poll every 10s
+    return () => clearInterval(interval);
+  }, [orderId]);
+
+  const mapStatus = (s: string) => {
+    if (s === "pending") return "placed";
+    if (s === "preparing") return "preparing";
+    if (s === "dispatched") return "delivery";
+    if (s === "delivered") return "delivered";
+    return "placed";
+  };
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#FEFDFA]"><Loader2 className="animate-spin text-[#811920]" /></div>;
+  if (!order) return <div className="min-h-screen flex items-center justify-center bg-[#FEFDFA]">Order not found</div>;
+
+  const status = mapStatus(order.status);
 
   return (
     <div className="min-h-screen flex flex-col bg-[#FEFDFA]" style={{ fontFamily: "'DM Sans', sans-serif" }}>
@@ -90,7 +134,14 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
 
         {/* Order Header */}
         <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-10 md:mb-16">
-           <h1 className="text-3xl md:text-4xl font-black text-[#811920]">Order #{orderId || "CHZ-39403"}</h1>
+           <div>
+             <h1 className="text-3xl md:text-4xl font-black text-[#811920]">Order #{(order.id || order._id || '000000').toString().slice(-6).toUpperCase()}</h1>
+             {order.isDemo && (
+               <span className="inline-block mt-2 px-3 py-1 bg-[#FECE04]/20 text-[#811920] text-[10px] font-black rounded-full uppercase tracking-wider border border-[#FECE04]/30">
+                 Demo Tracking Mode
+               </span>
+             )}
+           </div>
            <div className="md:text-right">
              <p className="text-xs md:text-sm font-bold text-gray-400">Estimated Delivery Time</p>
              <p className="text-2xl md:text-3xl font-black text-[#811920]">30-40 min</p>
@@ -127,7 +178,7 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
               </div>
               {/* Step 3: Delivery */}
               <div className="flex flex-col items-center group relative">
-                 <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${["delivery", "delivered"].includes(status) ? "bg-[#FECE04] text-black" : "bg-gray-400 text-white"}`}>
+                 <div className={`w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center shadow-lg border-2 md:border-4 border-white transition-all ${["delivery", "delivered"].includes(status) ? "bg-[#FECE04] text-black" : "bg-gray-100 text-white"}`}>
                     <Bike className="w-5 h-5 md:w-7 md:h-7" />
                  </div>
                  <span className="absolute -bottom-6 text-[8px] md:text-xs font-bold text-gray-400 whitespace-nowrap">On the way</span>
@@ -156,7 +207,7 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
                  </div>
                  <div>
                    <p className="text-xs md:text-sm font-bold text-gray-400">Rider Details</p>
-                   <p className="text-xl md:text-2xl font-black text-gray-900">Ali</p>
+                   <p className="text-xl md:text-2xl font-black text-gray-900">Assigned Rider</p>
                  </div>
               </div>
               <div className="flex justify-end mt-4 md:mt-0">
@@ -181,11 +232,16 @@ export function OrderTrackPage({ orderId }: { orderId: string }) {
         {/* Status Message Box */}
         <div className="bg-white rounded-[24px] p-6 md:p-8 border border-gray-100 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
            <div>
-             <p className="font-black text-gray-900 text-base md:text-lg mb-1">Your order is being prepared.</p>
+             <p className="font-black text-gray-900 text-base md:text-lg mb-1">
+               {status === "placed" && "Your order has been received."}
+               {status === "preparing" && "Your order is being prepared."}
+               {status === "delivery" && "Your order is on the way!"}
+               {status === "delivered" && "Your order has been delivered. Enjoy!"}
+             </p>
              <p className="text-xs md:text-sm font-bold text-gray-500">Our team may call you to ask for further details.</p>
            </div>
            <div className="md:text-right shrink-0">
-             <p className="text-xs md:text-sm font-black text-gray-400">12:50 PM</p>
+             <p className="text-xs md:text-sm font-black text-gray-400">{new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
            </div>
         </div>
 

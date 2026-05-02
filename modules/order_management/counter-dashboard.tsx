@@ -72,8 +72,45 @@ const LATEST_ORDERS = [
   { id: "FD-8091", name: "Zaiden Good", time: "7 AM, Thu 8", meal: "Vegetable Stir", qty: 2, status: "Process" },
 ];
 
+import { api } from "@/lib/api";
+
 export function CounterDashboard() {
   const router = useRouter();
+  const [orders, setOrders] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await api.orders.getAll();
+        setOrders(data);
+      } catch (err) {
+        console.error("Dashboard failed to fetch orders:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+    const interval = setInterval(loadData, 5000); // Poll every 5s
+    return () => clearInterval(interval);
+  }, []);
+
+  const stats = React.useMemo(() => {
+    const totalIncome = orders.reduce((sum, o) => sum + (o.total_price || 0), 0);
+    const orderTotal = orders.length;
+    const inProgress = orders.filter(o => ["pending", "preparing", "sent"].includes(o.status)).length;
+    const completed = orders.filter(o => o.status === "completed" || o.status === "delivered").length;
+    const cancelled = orders.filter(o => o.status === "cancelled").length;
+
+    return {
+      income: totalIncome,
+      orderTotal,
+      inProgress,
+      completed,
+      cancelled
+    };
+  }, [orders]);
+
   return (
     <div className="flex flex-col lg:flex-row h-screen w-full bg-[#EDEDED] font-sans selection:bg-black/10 overflow-hidden">
       {/* Sidebar - Desktop */}
@@ -138,20 +175,20 @@ export function CounterDashboard() {
               </div>
               <div className="relative z-10">
                 <p className="text-[14px] font-bold text-white/70">Income</p>
-                <p className="text-[34px] font-black mt-1">$385,509</p>
+                <p className="text-[34px] font-black mt-1">Rs. {stats.income.toLocaleString()}</p>
                 <div className="mt-4 flex items-center gap-2">
-                  <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[12px] font-black"><TrendingUp size={12} /> 19%</span>
-                  <span className="text-[12px] font-bold text-white/50">Than yesterday</span>
+                  <span className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-[12px] font-black"><TrendingUp size={12} /> Live</span>
+                  <span className="text-[12px] font-bold text-white/50">Total Earnings</span>
                 </div>
               </div>
               <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-3xl" />
             </div>
 
             {[
-              { title: "Order total", val: "328", sub: "+ 15%", icon: ShoppingBag, color: "text-orange-500", bg: "bg-orange-50" },
-              { title: "Order in progress", val: "89", sub: "- 10%", icon: Clock, color: "text-blue-500", bg: "bg-blue-50" },
-              { title: "Order Completed", val: "239", sub: "+ 8%", icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },
-              { title: "Food Sold", val: "239", sub: "- 4%", icon: UtensilsCrossed, color: "text-red-500", bg: "bg-red-50" },
+              { title: "Order total", val: stats.orderTotal.toString(), sub: "Total", icon: ShoppingBag, color: "text-orange-500", bg: "bg-orange-50" },
+              { title: "Order in progress", val: stats.inProgress.toString(), sub: "Live", icon: Clock, color: "text-blue-500", bg: "bg-blue-50" },
+              { title: "Order Completed", val: stats.completed.toString(), sub: "Total", icon: CheckCircle2, color: "text-green-500", bg: "bg-green-50" },
+              { title: "Order Cancelled", val: stats.cancelled.toString(), sub: "Total", icon: UtensilsCrossed, color: "text-red-500", bg: "bg-red-50" },
             ].map((c, i) => (
               <div key={i} className="bg-white rounded-[32px] p-7 border border-slate-50 shadow-sm relative group hover:shadow-xl transition-all duration-300">
                 <div className="flex justify-between items-start mb-6">
@@ -164,8 +201,8 @@ export function CounterDashboard() {
                   <p className="text-[14px] font-black text-slate-300">{c.title}</p>
                   <p className="text-[34px] font-black text-slate-800 mt-1">{c.val}</p>
                   <div className="mt-4 flex items-center gap-2">
-                    <span className={`text-[12px] font-black ${c.sub.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>{c.sub}</span>
-                    <span className="text-[12px] font-bold text-slate-400">Than yesterday</span>
+                    <span className={`text-[12px] font-black text-slate-400`}>{c.sub}</span>
+                    <span className="text-[12px] font-bold text-slate-400">All time</span>
                   </div>
                 </div>
               </div>
@@ -267,42 +304,57 @@ export function CounterDashboard() {
                 <button className="text-sm font-black text-slate-400 hover:text-slate-800 transition-colors uppercase tracking-widest">View All</button>
               </div>
               
-              <table className="w-full text-left min-w-[600px]">
+              <table className="w-full text-left min-w-[700px]">
                 <thead>
                   <tr className="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] border-b border-slate-50">
-                    <th className="pb-6 px-4">Menu Name</th>
-                    <th className="pb-6 px-4">Meal</th>
-                    <th className="pb-6 px-4">Qty</th>
+                    <th className="pb-6 px-4">Track ID</th>
+                    <th className="pb-6 px-4">Customer Name</th>
+                    <th className="pb-6 px-4">Details</th>
+                    <th className="pb-6 px-4">Price</th>
                     <th className="pb-6 px-4">Status</th>
-                    <th className="pb-6 px-4">Wait Time</th>
+                    <th className="pb-6 px-4">Date & Time</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {[
-                    { name: 'Cheese Burger', meal: 'Chicken', qty: '01', status: 'Done', time: '12 Min', img: '🍔' },
-                    { name: 'Pepperoni Pizza', meal: 'Beef', qty: '01', status: 'Ready', time: '15 Min', img: '🍕' },
-                    { name: 'Iced Americano', meal: 'Coffee', qty: '02', status: 'Process', time: '05 Min', img: '☕' },
-                    { name: 'Ceaser Salad', meal: 'Snack', qty: '01', status: 'Done', time: '08 Min', img: '🥗' },
-                  ].map((o, i) => (
-                    <tr key={i} className="group hover:bg-slate-50 transition-colors">
-                      <td className="py-5 px-4 font-black">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{o.img}</span>
-                          <span className="text-slate-800">{o.name}</span>
-                        </div>
-                      </td>
-                      <td className="py-5 px-4 text-sm font-bold text-slate-700">{o.meal}</td>
-                      <td className="py-5 px-4 text-sm font-bold text-slate-700">{o.qty}</td>
-                      <td className="py-5 px-4">
-                        <span className={`px-4 py-1.5 rounded-xl text-[11px] font-black ${o.status === 'Done' ? 'bg-emerald-50 text-emerald-600' :
-                            o.status === 'Ready' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
+                  {orders.slice(0, 10).map((o, i) => {
+                    const utcStr = o.created_at.includes('Z') || o.created_at.includes('+') ? o.created_at : `${o.created_at}Z`;
+                    const date = new Date(utcStr);
+                    const formattedDate = date.toLocaleDateString('en-PK', { day: '2-digit', month: 'short' });
+                    const formattedTime = date.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    
+                    return (
+                      <tr key={o.id} className="group hover:bg-slate-50 transition-colors">
+                        <td className="py-5 px-4 font-black text-slate-800 text-sm uppercase tracking-wider">
+                          #{ (o.id || o._id || '000000').toString().slice(-6) }
+                        </td>
+                        <td className="py-5 px-4 text-sm font-bold text-slate-700">{o.customer_name || 'Walk-in'}</td>
+                        <td className="py-5 px-4">
+                          <p className="text-sm font-bold text-slate-700 truncate max-w-[200px]">
+                            {o.items?.map((item: any) => `${item.quantity}x ${item.product_name || 'Item'}`).join(', ')}
+                          </p>
+                        </td>
+                        <td className="py-5 px-4 font-black text-[#811920] text-sm">
+                          Rs. {o.total_price || 0}
+                        </td>
+                        <td className="py-5 px-4">
+                          <span className={`px-4 py-1.5 rounded-xl text-[11px] font-black ${
+                            o.status === 'completed' || o.status === 'delivered' ? 'bg-emerald-50 text-emerald-600' :
+                            o.status === 'pending' || o.status === 'preparing' ? 'bg-orange-50 text-orange-600' : 'bg-blue-50 text-blue-600'
                           }`}>
-                          {o.status}
-                        </span>
-                      </td>
-                      <td className="py-5 px-4 text-sm font-bold text-slate-400">{o.time}</td>
+                            {o.status.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-5 px-4 text-sm font-bold text-slate-400">
+                          {formattedDate}, {formattedTime}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {orders.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={5} className="py-10 text-center text-slate-400 font-bold">No orders found.</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
             </div>

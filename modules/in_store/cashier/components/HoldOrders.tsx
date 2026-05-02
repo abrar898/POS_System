@@ -4,14 +4,8 @@ import { motion } from 'framer-motion';
 import { ChevronLeft } from 'lucide-react';
 import { useCashierStore } from '../store/useCashierStore';
 
-const HOLD_ORDERS = [
-  { id: '#CHZ-2012', table: 'Dine-in • Table 05', time: '10 min ago', total: 1890 },
-  { id: '#CHZ-2013', table: 'Takeaway', time: '18 min ago', total: 1299 },
-  { id: '#CHZ-2014', table: 'Dine-in • Table 09', time: '20 min ago', total: 2449 },
-];
-
 export default function HoldOrders() {
-  const { setActiveScreen } = useCashierStore();
+  const { setActiveScreen, holdOrders, resumeHoldOrder, removeHoldOrder } = useCashierStore();
 
   return (
     <motion.div
@@ -32,30 +26,50 @@ export default function HoldOrders() {
             </button>
             <h2 className="text-2xl font-extrabold text-[#000000]">Hold Orders</h2>
           </div>
-          <button className="text-[#811920] font-bold text-sm hover:underline">
+          <button 
+            onClick={() => {
+              if (confirm("Clear all held orders?")) {
+                holdOrders.forEach(o => removeHoldOrder(o.id));
+              }
+            }}
+            className="text-[#811920] font-bold text-sm hover:underline"
+          >
             Clear All
           </button>
         </div>
 
         <div className="space-y-4 mb-8">
-          {HOLD_ORDERS.map(order => (
+          {holdOrders.map(order => (
             <div key={order.id} className="flex items-center justify-between p-5 bg-white border border-[#737373]/10 rounded-2xl hover:border-[#FECE04]/50 transition-colors">
               <div>
                 <h4 className="font-extrabold text-lg mb-1">{order.id}</h4>
-                <p className="text-sm text-[#737373] mb-1">{order.table}</p>
+                <p className="text-sm text-[#737373] mb-1">Takeaway</p>
                 <p className="text-xs text-[#737373]">{order.time}</p>
               </div>
               <div className="text-right flex flex-col items-end gap-3">
                 <p className="font-extrabold text-lg">Rs. {order.total.toLocaleString()}</p>
-                <button 
-                  onClick={() => setActiveScreen('pos')}
-                  className="px-6 py-2 border-2 border-[#FECE04] text-black font-bold rounded-lg hover:bg-[#FECE04] transition-colors text-sm"
-                >
-                  Resume
-                </button>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={() => removeHoldOrder(order.id)}
+                    className="px-4 py-2 border-2 border-[#811920]/20 text-[#811920] font-bold rounded-lg hover:bg-[#811920] hover:text-white transition-colors text-sm"
+                  >
+                    Delete
+                  </button>
+                  <button 
+                    onClick={() => resumeHoldOrder(order.id)}
+                    className="px-6 py-2 border-2 border-[#FECE04] text-black font-bold rounded-lg hover:bg-[#FECE04] transition-colors text-sm"
+                  >
+                    Resume
+                  </button>
+                </div>
               </div>
             </div>
           ))}
+          {holdOrders.length === 0 && (
+            <div className="py-20 text-center opacity-40">
+              <p className="font-bold text-[#737373]">No orders on hold</p>
+            </div>
+          )}
         </div>
       </div>
     </motion.div>

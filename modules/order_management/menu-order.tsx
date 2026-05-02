@@ -32,29 +32,33 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-// Mock Data
-const MENU_ITEMS = [
-  { id: 101, name: "Classic Beef Burger", price: 45000, category: "Main Dish", img: "🍔" },
-  { id: 102, name: "Double Cheese Burger", price: 65000, category: "Main Dish", img: "🍔" },
-  { id: 1, name: "Es Buah", price: 26000, category: "Beverage", img: "🍧" },
-  { id: 2, name: "Es Cincau", price: 20000, category: "Beverage", img: "🥤" },
-  { id: 3, name: "Es Cendol Ijo", price: 20000, category: "Beverage", img: "🍹" },
-  { id: 4, name: "Es Pisang Ijo", price: 25000, category: "Beverage", img: "🍨" },
-  { id: 5, name: "Es Kelapa Muda", price: 22000, category: "Beverage", img: "🥥" },
-  { id: 6, name: "Es Teler", price: 28000, category: "Beverage", img: "🍧" },
-];
-
-const ORDER_LIST_TASKS = [
-  { id: "#324398", type: "Takeaway", name: "Juna Wok", time: "07-05-2025, 03:19 pm", items: 4, status: "Waiting", statusColor: "text-orange-500 bg-orange-50" },
-  { id: "#223399", type: "Delivery", name: "Jung Kit", time: "07-05-2025, 03:10 pm", items: 6, status: "Ready", statusColor: "text-emerald-500 bg-emerald-50" },
-  { id: "#114481", type: "Dine in", name: "John Pantau", time: "07-05-2025, 02:19 pm", items: 10, status: "Canceled", statusColor: "text-rose-500 bg-rose-50" },
-];
+import { api } from "@/lib/api";
 
 export function MenuOrderPage() {
   const router = useRouter();
+  const [products, setProducts] = React.useState<any[]>([]);
+  const [categories, setCategories] = React.useState<string[]>([]);
   const [cart, setCart] = React.useState<any[]>([]);
-  const [category, setCategory] = React.useState("Main Dish");
+  const [category, setCategory] = React.useState("");
   const [selectedItem, setSelectedItem] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await api.products.getAll();
+        setProducts(data);
+        const uniqueCategories = Array.from(new Set(data.map((p: any) => p.category))) as string[];
+        setCategories(uniqueCategories);
+        if (uniqueCategories.length > 0) setCategory(uniqueCategories[0]);
+      } catch (err) {
+        console.error("Failed to load products:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const discount = subtotal * 0.1;
@@ -71,17 +75,40 @@ export function MenuOrderPage() {
     });
   };
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart(prev => prev.filter(i => i.id !== id));
   };
 
-  const updateQty = (id: number, delta: number) => {
+  const updateQty = (id: string, delta: number) => {
     setCart(prev => prev.map(i => {
       if (i.id === id) {
         return { ...i, quantity: Math.max(1, i.quantity + delta) };
       }
       return i;
     }));
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const orderData = {
+        customer_name: "Walk-in Customer",
+        items: cart.map(item => ({
+          product_id: item.id,
+          product_name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        })),
+        total_price: total,
+        status: "pending",
+        type: "takeaway"
+      };
+      
+      await api.orders.create(orderData);
+      router.push('/counter/orders');
+    } catch (err) {
+      console.error("Failed to create order:", err);
+      alert("Failed to complete order. Is the backend running?");
+    }
   };
 
   return (
@@ -138,36 +165,31 @@ export function MenuOrderPage() {
             
             {/* Categories - Design.png Style */}
             <div className="flex gap-4 lg:gap-6 overflow-x-auto pb-4 mb-6 lg:mb-10 no-scrollbar">
-               {[
-                 { id: "Appetizer", label: "Bakery", img: "🥐" },
-                 { id: "Main Dish", label: "Seafood", img: "🦐" },
-                 { id: "Pizza", label: "Pizza", img: "🍕" },
-                 { id: "Main Dish", label: "Chicken", img: "🍗" },
-                 { id: "Beverage", label: "Beverages", img: "☕" },
-                 { id: "Main Dish", label: "Burgers", img: "🍔" },
-               ].map((cat, i) => (
+               {categories.map((cat, i) => (
                  <button 
                   key={i}
-                  onClick={() => setCategory(cat.id)}
+                  onClick={() => setCategory(cat)}
                   className={`min-w-[120px] h-[120px] rounded-[25px] flex flex-col items-center justify-center gap-3 transition-all ${
-                    category === cat.id ? "bg-black text-white shadow-xl shadow-black/20" : "bg-white/60 text-slate-400 hover:bg-white hover:text-slate-600"
+                    category === cat ? "bg-black text-white shadow-xl shadow-black/20" : "bg-white/60 text-slate-400 hover:bg-white hover:text-slate-600"
                   }`}
                  >
-                   <div className="text-3xl">{cat.img}</div>
-                   <span className="text-[10px] font-black uppercase tracking-widest">{cat.label}</span>
+                   <div className="text-3xl">{cat === "Pizzas" ? "🍕" : cat === "Burgers" ? "🍔" : cat === "Beverages" ? "🥤" : "🍽️"}</div>
+                   <span className="text-[10px] font-black uppercase tracking-widest">{cat}</span>
                  </button>
                ))}
+               {categories.length === 0 && !loading && <p className="text-slate-400 font-bold">No categories found.</p>}
+               {loading && <div className="h-20 w-full animate-pulse bg-white/20 rounded-3xl" />}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
-              {MENU_ITEMS.filter(item => category === "All" || item.category === category).map((item) => (
+              {products.filter(item => !category || item.category === category).map((item) => (
                 <div 
                   key={item.id} 
                   onClick={() => setSelectedItem(item)}
                   className="bg-white p-6 rounded-[35px] border border-slate-100 shadow-sm group hover:shadow-2xl transition-all duration-500 cursor-pointer relative"
                 >
                   <div className="aspect-square rounded-[25px] bg-[#EDEDED] mb-6 flex items-center justify-center text-7xl group-hover:scale-110 transition-transform duration-500 overflow-hidden relative shadow-inner">
-                    {item.img}
+                    {item.image_url ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /> : "🍽️"}
                   </div>
                   
                   <div className="flex gap-0.5 text-black mb-2">
@@ -183,6 +205,9 @@ export function MenuOrderPage() {
                   </button>
                 </div>
               ))}
+              {products.length === 0 && !loading && (
+                <div className="col-span-full py-20 text-center text-slate-400 font-bold">No products found.</div>
+              )}
             </div>
           </section>
 
@@ -289,8 +314,8 @@ export function MenuOrderPage() {
           <div className="flex-1 overflow-y-auto space-y-8 pr-2 custom-scrollbar">
             {cart.map((item) => (
               <div key={item.id} className="flex gap-6 items-center group">
-                <div className="h-16 w-16 bg-[#EDEDED] rounded-2xl flex items-center justify-center text-3xl shadow-inner group-hover:scale-105 transition-transform shrink-0">
-                  {item.img}
+                <div className="h-16 w-16 bg-[#EDEDED] rounded-2xl flex items-center justify-center text-3xl shadow-inner group-hover:scale-105 transition-transform shrink-0 overflow-hidden">
+                  {item.image_url ? <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" /> : (item.img || "🍽️")}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-start">
@@ -332,7 +357,7 @@ export function MenuOrderPage() {
            </div>
 
            <button 
-            onClick={() => router.push('/counter/payment')}
+            onClick={handleCheckout}
             disabled={cart.length === 0}
             className="w-full h-[60px] bg-slate-300 text-slate-600 text-sm font-black rounded-[15px] hover:bg-black hover:text-white transition-all disabled:opacity-50 active:scale-95 shadow-sm"
            >

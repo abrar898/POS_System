@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Globe,
@@ -10,7 +10,9 @@ import {
   Maximize2,
   Calendar,
   ArrowRight,
+  Loader2
 } from "lucide-react";
+import { api } from "@/lib/api";
 
 // ─── Pakistan Restaurant Analytics Mock Data ───────────────────────────────────
 const ANALYTICS_DATA = {
@@ -80,6 +82,30 @@ function buildAreaPath(data: number[], width: number): string {
 export function AdminDashboard() {
   const [timeframe, setTimeframe] = useState<"Week" | "Month" | "Year">("Month");
   const [focusPos, setFocusPos] = useState(42);
+  const [stats, setStats] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      try {
+        const [statsData, productsData, ordersData] = await Promise.all([
+          api.orders.getStats(),
+          api.products.getAll(),
+          api.orders.getAll()
+        ]);
+        setStats(statsData);
+        setProducts(productsData);
+        setOrders(ordersData);
+      } catch (err) {
+        console.error("Failed to load dashboard stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadDashboardData();
+  }, []);
 
   const currentData = CHART_DATA[timeframe];
 
@@ -99,6 +125,8 @@ export function AdminDashboard() {
 
   const currentPercent = getValueAtPos(currentData.pink);
   const lessonsCount = Math.round(currentPercent * 0.4);
+
+  if (loading) return <div className="h-full flex items-center justify-center bg-background"><Loader2 className="animate-spin text-[var(--color-primary)]" /></div>;
 
   return (
     <div className="flex h-full min-h-0 w-full flex-col bg-background text-foreground overflow-hidden font-sans">
@@ -288,6 +316,71 @@ export function AdminDashboard() {
                   ))}
                 </div>
               </div>
+            </div>
+
+            {/* Order History Table */}
+            <div className="bg-[var(--bg-card)] rounded-[28px] p-7 card-shadow transition-all hover:shadow-xl hover:shadow-[#000]/5 group overflow-x-auto mt-6">
+              <div className="flex justify-between items-center mb-6 min-w-[600px]">
+                <div>
+                  <h3 className="text-[17px] font-bold text-foreground">Order Updates</h3>
+                  <p className="text-[12px] text-[var(--text-secondary)] mt-0.5 font-medium">Recent transactions across all channels.</p>
+                </div>
+                <button className="text-sm font-black text-slate-400 hover:text-slate-800 transition-colors uppercase tracking-widest">View All</button>
+              </div>
+              
+              <table className="w-full text-left min-w-[700px]">
+                <thead>
+                  <tr className="text-[11px] font-black text-[var(--text-secondary)] uppercase tracking-[0.2em] border-b border-[#f0f1f5]">
+                    <th className="pb-4 px-2">Order #</th>
+                    <th className="pb-4 px-2">Customer Name</th>
+                    <th className="pb-4 px-2">Details</th>
+                    <th className="pb-4 px-2">Price</th>
+                    <th className="pb-4 px-2">Status</th>
+                    <th className="pb-4 px-2">Date & Time</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#f0f1f5]">
+                  {orders.slice(0, 5).map((o, i) => {
+                    const utcStr = o.created_at.includes('Z') || o.created_at.includes('+') ? o.created_at : `${o.created_at}Z`;
+                    const date = new Date(utcStr);
+                    const formattedDate = date.toLocaleDateString('en-PK', { day: '2-digit', month: 'short' });
+                    const formattedTime = date.toLocaleTimeString('en-PK', { hour: '2-digit', minute: '2-digit', hour12: true });
+                    
+                    return (
+                      <tr key={o.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-4 px-2 font-black text-foreground text-sm uppercase tracking-wider">
+                          #{ (o.id || o._id || '000000').toString().slice(-6) }
+                        </td>
+                        <td className="py-4 px-2 text-sm font-bold text-foreground">{o.customer_name || 'Walk-in'}</td>
+                        <td className="py-4 px-2">
+                          <p className="text-sm font-bold text-[var(--text-secondary)] truncate max-w-[200px]">
+                            {o.items?.map((item: any) => `${item.quantity}x ${item.product_name || 'Item'}`).join(', ')}
+                          </p>
+                        </td>
+                        <td className="py-4 px-2 font-black text-[var(--color-primary)] text-sm">
+                          Rs. {o.total_price || 0}
+                        </td>
+                        <td className="py-4 px-2">
+                          <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase ${
+                            o.status === 'completed' || o.status === 'delivered' ? 'bg-green-100 text-green-700' :
+                            o.status === 'pending' || o.status === 'preparing' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+                          }`}>
+                            {o.status}
+                          </span>
+                        </td>
+                        <td className="py-4 px-2 text-xs font-bold text-[var(--text-secondary)]">
+                          {formattedDate}, {formattedTime}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                  {orders.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-[var(--text-secondary)] font-medium">No orders found</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
 

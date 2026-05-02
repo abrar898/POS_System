@@ -9,82 +9,87 @@ export default function OrderDetailModal() {
 
   if (!selectedOrder) return null;
 
+  const displayId = selectedOrder.id.toString().slice(-6).toUpperCase();
+
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="fixed inset-0 z-[100] flex items-center justify-center p-0 md:p-6">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+          className="absolute inset-0 bg-[#811920]/40 backdrop-blur-md"
           onClick={() => setSelectedOrder(null)}
         />
         
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.95, y: 20 }}
-          className="bg-[#FEFDFA] rounded-3xl w-full max-w-lg shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[85vh]"
+          initial={{ opacity: 0, y: 100 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 100 }}
+          className="bg-[#FEFDFA] w-full h-full md:h-auto md:max-h-[90vh] md:max-w-xl md:rounded-[40px] shadow-2xl relative z-10 overflow-hidden flex flex-col"
         >
-          <div className={`p-6 border-b border-[#737373]/10 flex justify-between items-start ${
-            selectedOrder.status === 'new' ? 'bg-[#FECE04]/10' : 
-            selectedOrder.status === 'preparing' ? 'bg-[#F28C28]/10' : 
-            selectedOrder.status === 'ready' ? 'bg-[#7ED957]/10' : 'bg-white'
-          }`}>
+          {/* Header */}
+          <div className="p-8 border-b border-slate-100 flex justify-between items-start">
             <div>
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-2xl font-extrabold text-[#811920]">{selectedOrder.id}</h2>
-                <span className={`px-2.5 py-1 rounded text-xs font-bold ${
-                  selectedOrder.status === 'new' ? 'bg-[#FECE04] text-black' : 
-                  selectedOrder.status === 'preparing' ? 'bg-[#F28C28] text-white' : 
-                  'bg-[#7ED957] text-white'
-                }`}>
-                  {selectedOrder.status.toUpperCase()}
-                </span>
+              <div className="flex items-center gap-3 mb-2">
+                 <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-widest">{selectedOrder.type}</span>
+                 <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                   selectedOrder.status === 'new' ? 'bg-[#811920] text-white' : 
+                   selectedOrder.status === 'preparing' ? 'bg-[#FECE04] text-black' : 
+                   'bg-[#7ED957] text-white'
+                 }`}>
+                   {selectedOrder.status}
+                 </span>
               </div>
-              <p className="text-[#737373] font-medium">{selectedOrder.type} {selectedOrder.table !== selectedOrder.type ? `• ${selectedOrder.table}` : ''}</p>
+              <h2 className="text-4xl font-black text-[#000000]">Order #{displayId}</h2>
+              <p className="text-[#737373] font-bold mt-2 text-lg">
+                 {selectedOrder.table !== selectedOrder.type ? `Table ${selectedOrder.table}` : 'Takeaway Order'}
+              </p>
             </div>
             
-            <div className="flex flex-col items-end gap-2">
-              <button 
-                onClick={() => setSelectedOrder(null)}
-                className="w-8 h-8 bg-white rounded-full flex items-center justify-center text-[#737373] hover:text-black shadow-sm"
-              >
-                <X size={18} />
-              </button>
-              <div className="flex items-center gap-1 text-[#811920] font-bold bg-white px-3 py-1.5 rounded-lg text-sm shadow-sm">
-                <Clock size={16} />
-                <span>{selectedOrder.elapsedTime}</span>
-              </div>
-            </div>
+            <button 
+              onClick={() => setSelectedOrder(null)}
+              className="w-12 h-12 bg-slate-50 rounded-full flex items-center justify-center text-[#737373] hover:bg-slate-100 transition-colors"
+            >
+              <X size={24} />
+            </button>
           </div>
 
-          <div className="p-6 overflow-y-auto flex-1 space-y-4">
-            {selectedOrder.items.map(item => (
-              <div key={item.id} className="flex justify-between items-start border-b border-[#737373]/10 pb-4 last:border-0">
-                <div className="flex gap-4">
-                  <span className="font-extrabold text-xl text-[#000000] w-6">{item.quantity}x</span>
+          {/* Items List */}
+          <div className="p-8 overflow-y-auto flex-1 space-y-6 custom-scrollbar">
+            <h3 className="text-xs font-black text-slate-300 uppercase tracking-[0.2em] mb-4">Order Items</h3>
+            {selectedOrder.items.map((item, idx) => (
+              <div key={idx} className="flex justify-between items-start border-b border-slate-50 pb-6 last:border-0">
+                <div className="flex gap-6">
+                  <span className="font-black text-3xl text-[#811920] w-12">{item.quantity}x</span>
                   <div>
-                    <p className="font-bold text-lg text-[#000000]">{item.name}</p>
-                    {item.size && <p className="text-sm text-[#737373] font-medium">{item.size}</p>}
-                    {item.note && <p className="text-sm text-[#811920] font-bold mt-1 bg-[#FDEFDE] inline-block px-2 py-0.5 rounded">* {item.note}</p>}
+                    <p className="font-black text-2xl text-[#000000]">{item.name}</p>
+                    {item.status && <p className="text-xs font-bold text-slate-400 uppercase mt-1">{item.status}</p>}
+                    {item.note && (
+                      <div className="mt-3 p-3 bg-[#FDEFDE] rounded-2xl border border-[#FECE04]/20 inline-flex items-center gap-2">
+                        <span className="text-sm font-black text-[#811920]">Special Note:</span>
+                        <span className="text-sm font-bold text-[#811920]">{item.note}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
             ))}
             
             {selectedOrder.notes && (
-              <div className="mt-6 p-4 bg-[#FDEFDE]/50 rounded-xl border border-[#811920]/20">
-                <p className="text-sm text-[#811920] font-bold">Order Note: {selectedOrder.notes}</p>
+              <div className="mt-8 p-6 bg-[#811920]/5 rounded-[30px] border border-[#811920]/10">
+                <p className="text-sm font-black text-[#811920] uppercase tracking-widest mb-2 opacity-50">Global Instructions</p>
+                <p className="text-lg text-[#811920] font-bold leading-relaxed">{selectedOrder.notes}</p>
               </div>
             )}
           </div>
 
-          <div className="p-6 bg-white border-t border-[#737373]/10">
+          {/* Footer Actions */}
+          <div className="p-8 bg-white border-t border-slate-50 grid grid-cols-1 gap-4">
             {selectedOrder.status === 'new' && (
               <button 
                 onClick={() => updateOrderStatus(selectedOrder.id, 'preparing')}
-                className="w-full py-4 bg-[#FECE04] text-black font-extrabold text-lg rounded-xl hover:bg-[#E5B800] transition-colors shadow-sm"
+                className="w-full py-6 bg-[#811920] text-white font-black text-xl rounded-[24px] hover:bg-[#6b141a] transition-all transform active:scale-[0.98] shadow-xl shadow-[#811920]/20 uppercase tracking-widest"
               >
                 Start Preparing
               </button>
@@ -92,7 +97,7 @@ export default function OrderDetailModal() {
             {selectedOrder.status === 'preparing' && (
               <button 
                 onClick={() => updateOrderStatus(selectedOrder.id, 'ready')}
-                className="w-full py-4 bg-[#7ED957] text-white font-extrabold text-lg rounded-xl hover:bg-[#6bc24a] transition-colors shadow-sm"
+                className="w-full py-6 bg-[#FECE04] text-black font-black text-xl rounded-[24px] hover:bg-[#e5b800] transition-all transform active:scale-[0.98] shadow-xl shadow-[#FECE04]/20 uppercase tracking-widest"
               >
                 Mark as Ready
               </button>
@@ -100,11 +105,17 @@ export default function OrderDetailModal() {
              {selectedOrder.status === 'ready' && (
               <button 
                 onClick={() => updateOrderStatus(selectedOrder.id, 'completed')}
-                className="w-full py-4 bg-[#7ED957] text-white font-extrabold text-lg rounded-xl hover:bg-[#6bc24a] transition-colors shadow-sm flex items-center justify-center gap-2"
+                className="w-full py-6 bg-[#7ED957] text-white font-black text-xl rounded-[24px] hover:bg-[#6bc24a] transition-all transform active:scale-[0.98] shadow-xl shadow-[#7ED957]/20 flex items-center justify-center gap-4 uppercase tracking-widest"
               >
-                Ready for Pickup <Bell size={20} />
+                Ready for Pickup <Bell size={24} />
               </button>
             )}
+            <button 
+               onClick={() => setSelectedOrder(null)}
+               className="w-full py-4 bg-slate-50 text-slate-400 font-bold rounded-2xl md:hidden"
+            >
+              Close Details
+            </button>
           </div>
         </motion.div>
       </div>

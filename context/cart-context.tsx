@@ -4,38 +4,77 @@ import React, { createContext, useContext, useState, useEffect } from "react";
 
 type CartItem = { id: string; name: string; price: number; image: string; qty: number; variation?: string; dishId: string };
 
+type CheckoutInfo = {
+  selectedAddress: string;
+  selectedPaymentMethod: string;
+  orderType: "delivery" | "pickup";
+  addresses: { id: string, address: string }[];
+};
+
 type CartContextType = {
   cart: CartItem[];
   addToCart: (dish: any, variationIndex?: number) => void;
+  incrementCartQty: (id: string) => void;
   removeFromCart: (id: string) => void;
   deleteFromCart: (id: string) => void;
   clearCart: () => void;
   cartTotal: number;
   deliveryCharges: number;
   grandTotal: number;
+  checkoutInfo: CheckoutInfo;
+  setCheckoutInfo: React.Dispatch<React.SetStateAction<CheckoutInfo>>;
+  lastOrderId: string;
+  setLastOrderId: (id: string) => void;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [lastOrderId, setLastOrderId] = useState<string>("");
+  const [checkoutInfo, setCheckoutInfo] = useState<CheckoutInfo>({
+    selectedAddress: "Home",
+    selectedPaymentMethod: "Cash on Delivery",
+    orderType: "delivery",
+    addresses: [
+      { id: "Home", address: "Emaar DHA 5, Islamabad" },
+      { id: "Work", address: "Blue Area, Islamabad" }
+    ]
+  });
 
-  // Load cart from localStorage on init
+  // Load cart and checkout from localStorage on init
   useEffect(() => {
-    const saved = localStorage.getItem("cheezious-cart");
-    if (saved) {
+    const savedCart = localStorage.getItem("cheezious-cart");
+    const savedCheckout = localStorage.getItem("cheezious-checkout");
+    const savedLastOrder = localStorage.getItem("cheezious-last-order");
+    
+    if (savedCart) {
       try {
-        setCart(JSON.parse(saved));
+        setCart(JSON.parse(savedCart));
       } catch (e) {
         console.error("Failed to parse cart", e);
       }
     }
+
+    if (savedCheckout) {
+      try {
+        setCheckoutInfo(JSON.parse(savedCheckout));
+      } catch (e) {
+        console.error("Failed to parse checkout info", e);
+      }
+    }
+
+    if (savedLastOrder) {
+      setLastOrderId(savedLastOrder);
+    }
   }, []);
 
-  // Save cart to localStorage on change
+  // Save to localStorage on change
   useEffect(() => {
     localStorage.setItem("cheezious-cart", JSON.stringify(cart));
-  }, [cart]);
+    localStorage.setItem("cheezious-checkout", JSON.stringify(checkoutInfo));
+    localStorage.setItem("cheezious-last-order", lastOrderId);
+  }, [cart, checkoutInfo, lastOrderId]);
 
   const addToCart = (dish: any, variationIndex?: number) => {
     setCart(prev => {
@@ -48,6 +87,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       if (ex) return prev.map(c => c.id === itemId ? { ...c, qty: c.qty + 1 } : c);
       return [...prev, { id: itemId, dishId: dish.id, name: itemName, price: itemPrice, image: dish.image, qty: 1, variation: variation?.name }];
     });
+  };
+
+  const incrementCartQty = (id: string) => {
+    setCart(prev => prev.map(c => c.id === id ? { ...c, qty: c.qty + 1 } : c));
   };
 
   const removeFromCart = (id: string) => {
@@ -70,7 +113,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const grandTotal = cartTotal + deliveryCharges;
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, deleteFromCart, clearCart, cartTotal, deliveryCharges, grandTotal }}>
+    <CartContext.Provider value={{ cart, addToCart, incrementCartQty, removeFromCart, deleteFromCart, clearCart, cartTotal, deliveryCharges, grandTotal, checkoutInfo, setCheckoutInfo, lastOrderId, setLastOrderId }}>
       {children}
     </CartContext.Provider>
   );

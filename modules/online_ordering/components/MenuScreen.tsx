@@ -11,6 +11,8 @@ interface MenuScreenProps {
   setSearch: (s: string) => void;
   setSelectedDish: (dish: any) => void;
   addToCart: (dish: any) => void;
+  products: any[];
+  categories: any[];
 }
 
 export function MenuScreen({
@@ -21,10 +23,12 @@ export function MenuScreen({
   search,
   setSearch,
   setSelectedDish,
-  addToCart
+  addToCart,
+  products,
+  categories
 }: MenuScreenProps) {
   
-  const filteredDishes = DISHES.filter(d =>
+  const filteredDishes = products.filter(d =>
     (activeCategory === "popular" || d.category === activeCategory) &&
     d.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -104,7 +108,7 @@ export function MenuScreen({
         
         {/* Horizontal Categories for Mobile */}
         <div className="md:hidden w-full overflow-x-auto no-scrollbar flex gap-2 pb-2 sticky top-16 bg-[#FEFDFA] z-40 py-2">
-          {CATEGORIES.map(cat => (
+          {categories.map(cat => (
             <button 
               key={cat.id} 
               onClick={() => setActiveCategory(cat.id)} 
@@ -120,7 +124,7 @@ export function MenuScreen({
         <aside className="hidden md:block w-[280px] shrink-0 sticky top-24 z-20">
           <div className="bg-white rounded-[32px] overflow-hidden border border-gray-100 shadow-xl shadow-gray-100/50">
             <div className="flex flex-col">
-              {CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <button 
                   key={cat.id} 
                   onClick={() => setActiveCategory(cat.id)} 
@@ -169,15 +173,15 @@ export function MenuScreen({
                 className="bg-white rounded-[24px] p-4 md:p-5 border border-[#811920]/10 hover:border-[#811920]/30 transition-all group relative cursor-pointer flex flex-col"
               >
                 {dish.badge && <div className="absolute top-4 left-4 z-10 bg-[#FECE04] text-[8px] font-black uppercase px-2 py-0.5 rounded-full shadow-sm">{dish.badge}</div>}
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-4">
-                  <img src={dish.image} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-gray-50 flex items-center justify-center">
+                  <img src={dish.image_url || '/banner-food.png'} alt={dish.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" />
                 </div>
                 <h3 className="font-black text-gray-900 text-sm md:text-base leading-tight mb-1">{dish.name}</h3>
                 <p className="text-[10px] font-bold text-gray-500 line-clamp-2 mb-2 leading-normal">{dish.description}</p>
                 
                 <div className="flex items-center gap-1 mb-3">
                    <Star size={10} className="fill-[#FECE04] text-[#FECE04]" />
-                   <span className="text-[11px] font-black text-gray-900">{dish.rating}</span>
+                   <span className="text-[11px] font-black text-gray-900">{dish.rating || 4.5}</span>
                 </div>
 
                 <div className="flex items-center justify-between mt-auto">

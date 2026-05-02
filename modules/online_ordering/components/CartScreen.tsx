@@ -8,6 +8,7 @@ interface CartScreenProps {
   removeFromCart: (id: string) => void;
   deleteFromCart: (id: string) => void;
   addToCart: (dish: any, variationIdx?: number) => void;
+  incrementCartQty: (id: string) => void;
   cartTotal: number;
   deliveryCharges: number;
   grandTotal: number;
@@ -18,6 +19,7 @@ export function CartScreen({
   removeFromCart,
   deleteFromCart,
   addToCart,
+  incrementCartQty,
   cartTotal,
   deliveryCharges,
   grandTotal
@@ -47,7 +49,7 @@ export function CartScreen({
                     <div className="flex items-center gap-3 md:gap-4 bg-gray-50 w-fit rounded-xl px-2 md:px-3 py-1 border border-gray-100">
                       <button onClick={() => removeFromCart(item.id)} className="text-gray-400 hover:text-gray-900"><Minus size={14} /></button>
                       <span className="text-sm md:text-base font-black w-6 text-center">{item.qty}</span>
-                      <button onClick={() => addToCart(DISHES.find(d => d.id === item.dishId) || DISHES[0], (DISHES.find(d => d.id === item.dishId) || DISHES[0]).variations?.findIndex(v => v.name === item.variation) ?? 0)} className="text-gray-400 hover:text-gray-900"><Plus size={14} /></button>
+                      <button onClick={() => incrementCartQty(item.id)} className="text-gray-400 hover:text-gray-900"><Plus size={14} /></button>
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end gap-3 md:gap-4">

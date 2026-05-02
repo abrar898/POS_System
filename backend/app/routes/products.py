@@ -9,6 +9,12 @@ router = APIRouter()
 async def read_products():
     return await product_crud.get_products()
 
+@router.get("/categories", response_model=List[str])
+async def read_categories():
+    products = await product_crud.get_products()
+    categories = sorted(list(set(p.category for p in products if p.category)))
+    return categories
+
 @router.get("/{product_id}", response_model=ProductInDB)
 async def read_product(product_id: str):
     product = await product_crud.get_product(product_id)

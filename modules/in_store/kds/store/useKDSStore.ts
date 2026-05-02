@@ -1,22 +1,22 @@
 import { create } from 'zustand';
+import { api } from '@/lib/api';
 
-export type OrderStatus = 'new' | 'preparing' | 'ready' | 'completed';
+export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
 
 export interface OrderItem {
   id: string;
   name: string;
   quantity: number;
-  size?: string;
-  note?: string;
+  price: number;
   status?: OrderStatus;
 }
 
 export interface KDSOrder {
   id: string;
   table: string;
-  type: 'Dine-in' | 'Takeaway' | 'Delivery';
+  type: 'dine-in' | 'takeaway' | 'delivery';
   timePlaced: string;
-  elapsedTime: string;
+  elapsedTime: string; // Added this
   status: OrderStatus;
   items: OrderItem[];
   notes?: string;
@@ -27,87 +27,81 @@ interface KDSStore {
   setActiveFilter: (filter: 'all' | OrderStatus) => void;
   
   orders: KDSOrder[];
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
+  fetchOrders: () => Promise<void>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
   
   selectedOrder: KDSOrder | null;
   setSelectedOrder: (order: KDSOrder | null) => void;
 }
 
-const INITIAL_ORDERS: KDSOrder[] = [
-  {
-    id: '#CHZ-1025',
-    table: 'Table 12',
-    type: 'Dine-in',
-    timePlaced: '12:45 PM',
-    elapsedTime: '00:45',
-    status: 'new',
-    items: [
-      { id: '1', name: 'Crown Crust Pizza', quantity: 1, size: 'Large' },
-      { id: '2', name: 'Zinger Burger', quantity: 1 },
-      { id: '3', name: 'Loaded Fries', quantity: 1 },
-      { id: '4', name: 'Coke 500ml', quantity: 1 }
-    ],
-    notes: 'No onion in burger'
-  },
-  {
-    id: '#CHZ-1024',
-    table: 'Takeaway',
-    type: 'Takeaway',
-    timePlaced: '12:35 PM',
-    elapsedTime: '01:20',
-    status: 'preparing',
-    items: [
-      { id: '5', name: 'Malai Boti Pizza', quantity: 1, size: 'Regular' },
-      { id: '6', name: 'Chicken Wings (6pc)', quantity: 1 }
-    ]
-  },
-  {
-    id: '#CHZ-1023',
-    table: 'Table 07',
-    type: 'Dine-in',
-    timePlaced: '12:15 PM',
-    elapsedTime: '01:50',
-    status: 'preparing',
-    items: [
-      { id: '7', name: 'Club Sandwich', quantity: 1 },
-      { id: '8', name: 'Mint Margarita', quantity: 1 }
-    ]
-  },
-  {
-    id: '#CHZ-1022',
-    table: 'Delivery',
-    type: 'Delivery',
-    timePlaced: '11:55 AM',
-    elapsedTime: '02:05',
-    status: 'ready',
-    items: [
-      { id: '9', name: 'Cheesy Fries', quantity: 1 },
-      { id: '10', name: 'Zinger Burger', quantity: 1 },
-      { id: '11', name: 'Coke 500ml', quantity: 1 }
-    ]
-  },
-  {
-    id: '#CHZ-1021',
-    table: 'Table 03',
-    type: 'Dine-in',
-    timePlaced: '11:30 AM',
-    elapsedTime: '02:45',
-    status: 'completed',
-    items: [
-      { id: '12', name: 'Pasta Alfredo', quantity: 1 }
-    ]
-  }
-];
-
-export const useKDSStore = create<KDSStore>((set) => ({
+export const useKDSStore = create<KDSStore>((set, get) => ({
   activeFilter: 'all',
   setActiveFilter: (filter) => set({ activeFilter: filter }),
   
-  orders: INITIAL_ORDERS,
-  updateOrderStatus: (orderId, status) => set((state) => ({
-    orders: state.orders.map(o => o.id === orderId ? { ...o, status } : o),
-    selectedOrder: null
-  })),
+  orders: [],
+  
+  fetchOrders: async () => {
+    try {
+      const [ordersData, productsData] = await Promise.all([
+        api.orders.getAll(),
+        api.products.getAll()
+      ]);
+      
+      const productMap = new Map();
+      if (Array.isArray(productsData)) {
+        productsData.forEach((p: any) => {
+          productMap.set(p.id || p._id, p.name);
+        });
+      }
+
+      const kdsOrders: KDSOrder[] = ordersData.map((o: any) => {
+        const timePlaced = new Date(o.created_at);
+        const diffMs = Math.abs(new Date().getTime() - timePlaced.getTime());
+        const diffMins = Math.floor(diffMs / 60000);
+        const elapsedTime = `${diffMins}m`;
+
+        const MOCK_NAMES: Record<string, string> = {
+          p1: 'Crown Crust Pizza', p2: 'Zinger Burger', p3: 'Loaded Fries', p4: 'Cheesy Fries',
+          p5: 'Cheezious Signature', p6: 'Mint Margarita', p7: 'Chicken Wings', p8: 'Pasta Alfredo',
+          d1: 'Crown Crust Pizza', d2: 'Beef Pepperoni', d3: 'Behari Kabab', d4: 'Chicken Tandoori',
+          d5: 'Calzone Chunks', d6: 'Bazinga Burger', d7: 'Special Roasted', d8: 'Soft Drink',
+          a1: 'Burger Combo', a2: 'Pizza Combo', a3: 'Snack Combo'
+        };
+
+        return {
+          id: o.id || o._id,
+          table: o.table_number || (o.type === 'delivery' ? 'Delivery' : 'Takeaway'),
+          type: o.type,
+          timePlaced: timePlaced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          elapsedTime,
+          status: (o.status === 'pending' ? 'new' : o.status) as OrderStatus,
+          items: o.items.map((item: any) => ({
+            id: item.product_id,
+            name: item.product_name || productMap.get(item.product_id) || MOCK_NAMES[item.product_id] || 'Item',
+            quantity: item.quantity,
+            price: item.price
+          })),
+          notes: o.notes
+        };
+      });
+      set({ orders: kdsOrders });
+    } catch (err) {
+      console.error("KDS failed to fetch orders:", err);
+    }
+  },
+
+  updateOrderStatus: async (orderId, status) => {
+    try {
+      await api.orders.update(orderId, { status });
+      // Update local state
+      set((state) => ({
+        orders: state.orders.map(o => o.id === orderId ? { ...o, status } : o),
+        selectedOrder: null
+      }));
+    } catch (err) {
+      console.error("KDS failed to update order status:", err);
+    }
+  },
   
   selectedOrder: null,
   setSelectedOrder: (order) => set({ selectedOrder: order }),

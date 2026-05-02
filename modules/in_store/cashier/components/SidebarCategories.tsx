@@ -3,7 +3,7 @@
 import { useCashierStore } from '../store/useCashierStore';
 
 const CATEGORIES = [
-  'Pizzas', 'Burgers', 'Sandwiches', 'Sides', 'Drinks', 'Desserts', 'Combos'
+  'All', 'Pizzas', 'Burgers', 'Sandwiches', 'Sides', 'Drinks', 'Desserts', 'Combos'
 ];
 
 export default function SidebarCategories() {
