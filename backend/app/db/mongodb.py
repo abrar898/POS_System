@@ -2,22 +2,19 @@ from motor.motor_asyncio import AsyncIOMotorClient
 from ..core.config import settings
 import logging
 
-class Database:
-    client: AsyncIOMotorClient = None
-    db = None
-
-db = Database()
+# In serverless environments like Vercel, we initialize the client at the module level.
+# Motor's AsyncIOMotorClient doesn't block and will connect on demand.
+client = AsyncIOMotorClient(settings.MONGODB_URL)
+database = client[settings.DATABASE_NAME]
 
 async def connect_to_mongo():
-    logging.info("Connecting to MongoDB...")
-    db.client = AsyncIOMotorClient(settings.MONGODB_URL)
-    db.db = db.client[settings.DATABASE_NAME]
-    logging.info("Connected to MongoDB!")
+    # Keep for compatibility with main.py if needed, but the client is already initialized
+    logging.info("MongoDB client initialized at module level")
+    pass
 
 async def close_mongo_connection():
-    logging.info("Closing MongoDB connection...")
-    db.client.close()
-    logging.info("MongoDB connection closed.")
+    # Serverless functions don't usually need explicit closure, but we'll keep it
+    client.close()
 
 def get_database():
-    return db.db
+    return database
