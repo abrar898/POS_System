@@ -106,7 +106,6 @@ export default function GoogleMapComponent({
             position={{ lat: riderPos[0], lng: riderPos[1] }} 
             icon={riderIcon} 
             zIndex={999}
-            optimized={false} 
           />
         )}
 
@@ -117,7 +116,6 @@ export default function GoogleMapComponent({
               strokeColor: "#6366f1", // Indigo 500 to match the route
               strokeOpacity: 0.8,
               strokeWeight: 6,
-              lineCap: "round",
             }}
           />
         )}

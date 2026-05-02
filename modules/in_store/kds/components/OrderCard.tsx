@@ -12,7 +12,7 @@ export default function OrderCard({ order }: OrderCardProps) {
 
   const getStatusColor = () => {
     switch(order.status) {
-      case 'new': return 'bg-white border-l-[6px] border-l-[#811920]';
+      case 'pending': return 'bg-white border-l-[6px] border-l-[#811920]';
       case 'preparing': return 'bg-white border-l-[6px] border-l-[#FECE04]';
       case 'ready': return 'bg-white border-l-[6px] border-l-[#7ED957]';
       default: return 'bg-white border-l-[6px] border-l-slate-200';
@@ -21,7 +21,7 @@ export default function OrderCard({ order }: OrderCardProps) {
 
   const getStatusButton = () => {
     switch(order.status) {
-      case 'new': 
+      case 'pending': 
         return (
           <button 
             onClick={(e) => { e.stopPropagation(); updateOrderStatus(order.id, 'preparing'); }}
@@ -42,7 +42,7 @@ export default function OrderCard({ order }: OrderCardProps) {
       case 'ready': 
         return (
           <button 
-            onClick={(e) => { e.stopPropagation(); updateOrderStatus(order.id, 'completed'); }}
+            onClick={(e) => { e.stopPropagation(); updateOrderStatus(order.id, 'delivered'); }}
             className="w-full py-4 bg-[#7ED957] text-white font-black rounded-2xl hover:bg-[#6bc24a] transition-all transform active:scale-95 shadow-lg shadow-[#7ED957]/20 mt-4 text-[16px] uppercase tracking-wider flex items-center justify-center gap-3"
           >
             Ready for Pickup <Bell size={18} />
@@ -63,7 +63,7 @@ export default function OrderCard({ order }: OrderCardProps) {
         <div>
           <div className="flex items-center gap-2 mb-1">
              <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full uppercase tracking-widest">{order.type}</span>
-             {order.status === 'new' && <span className="h-2 w-2 bg-[#811920] rounded-full animate-pulse" />}
+             {order.status === 'pending' && <span className="h-2 w-2 bg-[#811920] rounded-full animate-pulse" />}
           </div>
           <h3 className="font-black text-[22px] text-[#000000]">#{displayId}</h3>
           <p className="text-[13px] text-[#737373] font-bold mt-1">

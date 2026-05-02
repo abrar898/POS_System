@@ -8,7 +8,7 @@ export default function OrderBoard() {
   const { orders, activeFilter } = useKDSStore();
 
   const filteredOrders = orders.filter(o => 
-    o.status !== 'completed' && 
+    o.status !== 'delivered' && 
     (activeFilter === 'all' || o.status === activeFilter)
   );
 

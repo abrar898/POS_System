@@ -9,6 +9,7 @@ export interface OrderItem {
   quantity: number;
   price: number;
   status?: OrderStatus;
+  note?: string;
 }
 
 export interface KDSOrder {
@@ -74,7 +75,7 @@ export const useKDSStore = create<KDSStore>((set, get) => ({
           type: o.type,
           timePlaced: timePlaced.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           elapsedTime,
-          status: (o.status === 'pending' ? 'new' : o.status) as OrderStatus,
+          status: o.status as OrderStatus,
           items: o.items.map((item: any) => ({
             id: item.product_id,
             name: item.product_name || productMap.get(item.product_id) || MOCK_NAMES[item.product_id] || 'Item',

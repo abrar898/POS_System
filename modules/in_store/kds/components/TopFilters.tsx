@@ -7,15 +7,15 @@ export default function TopFilters() {
   const { activeFilter, setActiveFilter, orders } = useKDSStore();
 
   const counts = {
-    all: orders.filter(o => o.status !== 'completed').length,
-    new: orders.filter(o => o.status === 'new').length,
+    all: orders.filter(o => o.status !== 'delivered').length,
+    pending: orders.filter(o => o.status === 'pending').length,
     preparing: orders.filter(o => o.status === 'preparing').length,
     ready: orders.filter(o => o.status === 'ready').length,
   };
 
   const filters = [
     { id: 'all', label: 'All', count: counts.all, color: 'bg-[#FECE04]' },
-    { id: 'new', label: 'New', count: counts.new, color: 'bg-[#811920] text-white' },
+    { id: 'pending', label: 'New', count: counts.pending, color: 'bg-[#811920] text-white' },
     { id: 'preparing', label: 'Preparing', count: counts.preparing, color: 'bg-[#F28C28] text-white' },
     { id: 'ready', label: 'Ready', count: counts.ready, color: 'bg-[#7ED957] text-white' },
   ];

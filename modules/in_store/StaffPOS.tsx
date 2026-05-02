@@ -1,3 +1,4 @@
+"use client";
 import React, { useState, useEffect } from 'react';
 import { Search, Pause, ShoppingBag, MoreHorizontal, Plus, Minus, Trash2, CheckCircle2, User, Wallet, CreditCard, Banknote } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';

@@ -9,6 +9,30 @@ type Step = 'welcome' | 'menu' | 'customize' | 'cart' | 'addons' | 'details' | '
 
 const CATEGORIES = ['Pizzas', 'Burgers', 'Sides', 'Drinks', 'Deals'];
 
+const ADDONS = [
+  { 
+    id: 'a1', 
+    name: 'Fries & Drink', 
+    desc: 'Standard fries with 500ml soft drink', 
+    price: 350, 
+    image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=200&h=200&fit=crop' 
+  },
+  { 
+    id: 'a2', 
+    name: 'Nuggets (6 Pcs)', 
+    desc: 'Crispy chicken nuggets with dip', 
+    price: 450, 
+    image: 'https://images.unsplash.com/photo-1562967914-6cbb241c2a3d?w=200&h=200&fit=crop' 
+  },
+  { 
+    id: 'a3', 
+    name: 'Garlic Bread', 
+    desc: '4 pieces of cheesy garlic bread', 
+    price: 290, 
+    image: 'https://images.unsplash.com/photo-1573140247632-f8fd74997d5c?w=200&h=200&fit=crop' 
+  }
+];
+
 export default function CustomerFlow() {
   const [step, setStep] = useState<Step>('welcome');
   const [activeCategory, setActiveCategory] = useState('Pizzas');

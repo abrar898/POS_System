@@ -1,5 +1,6 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { api } from "@/lib/api";
 import {
   Users, Clock, Star, CheckCircle2, AlertCircle, Phone,
   Coffee, LayoutGrid, TrendingUp, Bell, X, ChevronRight,
@@ -138,7 +139,7 @@ export function SupervisorDashboard() {
             </div>
           </div>
           <div className="flex bg-gray-50 p-1 rounded-xl border border-gray-200">
-            {(["overview","performance"] as const).map(t => (
+            {(["overview","performance"] as const).map((t: "overview" | "performance") => (
               <button 
                 key={t} 
                 onClick={() => setActiveTab(t)} 
@@ -152,7 +153,7 @@ export function SupervisorDashboard() {
 
         {/* Mobile Tabs */}
         <div className="md:hidden flex p-2 bg-white border-b border-gray-200 gap-2 overflow-x-auto shrink-0">
-          {(["overview","performance"] as const).map(t => (
+          {(["overview","performance"] as const).map((t: "overview" | "performance") => (
             <button 
               key={t} 
               onClick={() => setActiveTab(t)} 

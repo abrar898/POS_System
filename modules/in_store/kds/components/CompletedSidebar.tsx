@@ -9,10 +9,10 @@ export default function CompletedSidebar() {
 
   // Dynamic Stats from store
   const totalOrders = orders.length;
-  const newOrders = orders.filter(o => o.status === 'new').length;
+  const newOrders = orders.filter(o => o.status === 'pending').length;
   const preparingOrders = orders.filter(o => o.status === 'preparing').length;
   const readyOrders = orders.filter(o => o.status === 'ready').length;
-  const completedOrders = orders.filter(o => o.status === 'completed').length;
+  const completedOrders = orders.filter(o => o.status === 'delivered').length;
 
   // Timer logic
   const [seconds, setSeconds] = useState(0);

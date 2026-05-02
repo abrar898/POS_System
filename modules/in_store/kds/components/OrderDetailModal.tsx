@@ -34,7 +34,7 @@ export default function OrderDetailModal() {
               <div className="flex items-center gap-3 mb-2">
                  <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase tracking-widest">{selectedOrder.type}</span>
                  <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                   selectedOrder.status === 'new' ? 'bg-[#811920] text-white' : 
+                   selectedOrder.status === 'pending' ? 'bg-[#811920] text-white' : 
                    selectedOrder.status === 'preparing' ? 'bg-[#FECE04] text-black' : 
                    'bg-[#7ED957] text-white'
                  }`}>
@@ -86,7 +86,7 @@ export default function OrderDetailModal() {
 
           {/* Footer Actions */}
           <div className="p-8 bg-white border-t border-slate-50 grid grid-cols-1 gap-4">
-            {selectedOrder.status === 'new' && (
+            {selectedOrder.status === 'pending' && (
               <button 
                 onClick={() => updateOrderStatus(selectedOrder.id, 'preparing')}
                 className="w-full py-6 bg-[#811920] text-white font-black text-xl rounded-[24px] hover:bg-[#6b141a] transition-all transform active:scale-[0.98] shadow-xl shadow-[#811920]/20 uppercase tracking-widest"
@@ -104,7 +104,7 @@ export default function OrderDetailModal() {
             )}
              {selectedOrder.status === 'ready' && (
               <button 
-                onClick={() => updateOrderStatus(selectedOrder.id, 'completed')}
+                onClick={() => updateOrderStatus(selectedOrder.id, 'delivered')}
                 className="w-full py-6 bg-[#7ED957] text-white font-black text-xl rounded-[24px] hover:bg-[#6bc24a] transition-all transform active:scale-[0.98] shadow-xl shadow-[#7ED957]/20 flex items-center justify-center gap-4 uppercase tracking-widest"
               >
                 Ready for Pickup <Bell size={24} />

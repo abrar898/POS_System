@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, Bell, Flame, LayoutGrid, Sparkles, Loader2 } from "lucide-react";
 import { api } from "@/lib/api";
@@ -28,8 +29,8 @@ export function WaiterDashboard() {
 
   // Filter tables assigned to "Sara Khan" (mocking current user for now)
   // In a real app, we'd use the logged in waiter's ID
-  const myTables = tables.filter((t) => t.status !== "available");
-  const activeTickets = orders.filter((o) => o.status === "pending" || o.status === "sent");
+  const myTables = tables.filter((t: any) => t.status !== "available");
+  const activeTickets = orders.filter((o: any) => o.status === "pending" || o.status === "sent");
 
   if (loading) return (
     <div className="h-full flex items-center justify-center">
@@ -107,7 +108,7 @@ export function WaiterDashboard() {
           </Link>
         </div>
         <div className="flex-1 overflow-y-auto no-scrollbar grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-2">
-          {activeTickets.slice(0, 8).map((o) => (
+          {activeTickets.slice(0, 8).map((o: any) => (
             <div key={o.id} className="p-4 lg:p-5 rounded-[20px] border border-slate-100 bg-[#F8FAFC] hover:bg-white hover:shadow-xl transition-all group cursor-pointer h-fit">
               <div className="flex justify-between items-start mb-4">
                 <div className="h-10 w-10 bg-white rounded-lg flex items-center justify-center text-slate-800 font-black shadow-sm group-hover:scale-110 transition-transform">
